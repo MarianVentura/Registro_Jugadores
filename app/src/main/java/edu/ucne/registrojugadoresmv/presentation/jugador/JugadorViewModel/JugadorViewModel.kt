@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador
+package edu.ucne.registrojugadoresmv.presentation.jugador.JugadorViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -7,7 +7,8 @@ import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.usecase.GetJugadoresUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.InsertJugadorUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.ValidateJugadorUseCase
-import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.JugadorEvent
+import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent
+import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,6 +54,8 @@ class JugadorViewModel(
             is JugadorEvent.ClearForm -> {
                 _uiState.value = JugadorUiState(jugadores = _uiState.value.jugadores)
             }
+
+            else -> {}
         }
     }
 
