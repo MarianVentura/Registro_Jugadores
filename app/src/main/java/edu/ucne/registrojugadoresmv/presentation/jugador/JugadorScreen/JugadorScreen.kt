@@ -1,4 +1,3 @@
-// presentation/jugador/JugadorScreen.kt
 package edu.ucne.registrojugadoresmv.presentation.jugador
 
 import androidx.compose.foundation.layout.*
@@ -19,7 +18,8 @@ import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.usecase.GetJugadoresUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.InsertJugadorUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.ValidateJugadorUseCase
-import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.JugadorEvent
+import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorViewModel.JugadorViewModel
+import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorViewModel.JugadorViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
