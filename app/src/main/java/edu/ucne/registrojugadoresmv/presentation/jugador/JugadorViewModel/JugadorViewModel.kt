@@ -21,7 +21,6 @@ class JugadorViewModel(
     private val insertJugadorUseCase: InsertJugadorUseCase,
     private val validateJugadorUseCase: ValidateJugadorUseCase
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(JugadorUiState())
     val uiState: StateFlow<JugadorUiState> = _uiState.asStateFlow()
 
@@ -35,26 +34,24 @@ class JugadorViewModel(
                 _uiState.value = _uiState.value.copy(
                     nombres = event.nombres,
                     nombresError = null,
-                    errorMessage = null
+                    errorMessage = null,
+                    successMessage = null // LIMPIAR MENSAJE DE ÉXITO
                 )
             }
-
             is JugadorEvent.PartidasChanged -> {
                 _uiState.value = _uiState.value.copy(
                     partidas = event.partidas,
                     partidasError = null,
-                    errorMessage = null
+                    errorMessage = null,
+                    successMessage = null // LIMPIAR MENSAJE DE ÉXITO
                 )
             }
-
             is JugadorEvent.SaveJugador -> {
                 saveJugador()
             }
-
             is JugadorEvent.ClearForm -> {
                 _uiState.value = JugadorUiState(jugadores = _uiState.value.jugadores)
             }
-
             else -> {}
         }
     }
@@ -62,8 +59,10 @@ class JugadorViewModel(
     private fun saveJugador() {
         viewModelScope.launch {
             // Validaciones
-            val nombresError = validateJugadorUseCase.validateNombre(_uiState.value.nombres)
-            val partidasError = validateJugadorUseCase.validatePartidas(_uiState.value.partidas)
+            val nombresError =
+                validateJugadorUseCase.validateNombre(_uiState.value.nombres)
+            val partidasError =
+                validateJugadorUseCase.validatePartidas(_uiState.value.partidas)
 
             if (nombresError != null || partidasError != null) {
                 _uiState.value = _uiState.value.copy(
