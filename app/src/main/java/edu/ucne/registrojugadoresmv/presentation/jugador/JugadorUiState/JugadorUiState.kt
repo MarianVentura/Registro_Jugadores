@@ -1,4 +1,3 @@
-// presentation/jugador/JugadorUiState.kt
 package edu.ucne.registrojugadoresmv.presentation.jugador
 
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
