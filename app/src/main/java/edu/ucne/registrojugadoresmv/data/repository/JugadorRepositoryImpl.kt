@@ -1,4 +1,3 @@
-// data/repository/JugadorRepositoryImpl.kt
 package edu.ucne.registrojugadoresmv.data.repository
 
 import edu.ucne.registrojugadoresmv.data.local.dao.JugadorDao

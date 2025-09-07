@@ -1,4 +1,3 @@
-// domain/repository/JugadorRepository.kt
 package edu.ucne.registrojugadoresmv.domain.repository
 
 import edu.ucne.registrojugadoresmv.domain.model.Jugador

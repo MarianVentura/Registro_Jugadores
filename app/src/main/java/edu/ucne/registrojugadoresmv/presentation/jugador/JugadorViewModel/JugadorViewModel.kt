@@ -106,7 +106,6 @@ class JugadorViewModel(
     }
 }
 
-// Factory para crear el ViewModel
 class JugadorViewModelFactory(
     private val getJugadoresUseCase: GetJugadoresUseCase,
     private val insertJugadorUseCase: InsertJugadorUseCase,

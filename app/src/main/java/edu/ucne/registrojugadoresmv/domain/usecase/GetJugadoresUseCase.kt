@@ -1,4 +1,3 @@
-// domain/usecase/GetJugadoresUseCase.kt
 package edu.ucne.registrojugadoresmv.domain.usecase
 
 import edu.ucne.registrojugadoresmv.domain.model.Jugador

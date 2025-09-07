@@ -12,5 +12,5 @@ data class JugadorUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
-    val success: Boolean = false
-)
+    val success: Boolean = false)
+    val selectedJugadorId: Int? = null
