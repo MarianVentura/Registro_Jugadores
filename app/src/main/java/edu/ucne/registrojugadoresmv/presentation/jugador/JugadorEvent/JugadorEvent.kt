@@ -1,4 +1,5 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent
+// presentation/jugador/JugadorEvent.kt
+package edu.ucne.registrojugadoresmv.presentation.jugador
 
 sealed class JugadorEvent {
     data class NombresChanged(val nombres: String) : JugadorEvent()
