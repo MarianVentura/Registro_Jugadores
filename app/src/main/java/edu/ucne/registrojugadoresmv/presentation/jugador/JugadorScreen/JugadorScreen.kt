@@ -16,34 +16,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import edu.ucne.registrojugadoresmv.data.local.database.AppDatabase
-import edu.ucne.registrojugadoresmv.data.repository.JugadorRepositoryImpl
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
-import edu.ucne.registrojugadoresmv.domain.usecase.GetJugadoresUseCase
-import edu.ucne.registrojugadoresmv.domain.usecase.InsertJugadorUseCase
-import edu.ucne.registrojugadoresmv.domain.usecase.ValidateJugadorUseCase
 import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorViewModel.JugadorViewModel
-import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorViewModel.JugadorViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JugadorScreen() {
-    val context = LocalContext.current
-    val database = remember { AppDatabase.getDatabase(context) }
-    val repository = remember { JugadorRepositoryImpl(database.jugadorDao()) }
-    val viewModel: JugadorViewModel = viewModel(
-        factory = JugadorViewModelFactory(
-            GetJugadoresUseCase(repository),
-            InsertJugadorUseCase(repository),
-            ValidateJugadorUseCase(repository)
-        )
-    )
+fun JugadorScreen(viewModel: JugadorViewModel) {
     val state by viewModel.uiState.collectAsState()
 
     var showWelcome by remember { mutableStateOf(true) }
@@ -125,7 +107,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                         tint = Color(0xFF6200EE)
                     )
                 }
-                //Tittle
+
                 Text(
                     text = "Tic-Tac-Toe",
                     style = MaterialTheme.typography.headlineLarge.copy(
@@ -144,7 +126,6 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Description
                 Text(
                     text = "Registra a todos los jugadores que participarán en el torneo de Tic-Tac-Toe. Lleva un control completo de las partidas jugadas por cada participante.",
                     style = MaterialTheme.typography.bodyLarge,
@@ -155,7 +136,6 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                //Start Bottom
                 Button(
                     onClick = onStartRegistration,
                     modifier = Modifier
@@ -229,7 +209,6 @@ fun MainRegistrationScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            // Form
             item {
                 RegistrationForm(
                     state = state,
@@ -237,7 +216,6 @@ fun MainRegistrationScreen(
                 )
             }
 
-            // Players List
             item {
                 Text(
                     text = "Jugadores Registrados (${state.jugadores.size})",
@@ -249,15 +227,13 @@ fun MainRegistrationScreen(
             }
 
             if (state.jugadores.isEmpty()) {
-                item {
-                    EmptyPlayersCard()
-                }
+                item { EmptyPlayersCard() }
             } else {
                 items(state.jugadores) { jugador ->
                     ImprovedJugadorItem(
                         jugador = jugador,
-                        onEdit = { /* TODO: Implementar edición */ },
-                        onDelete = { /* TODO: Implementar eliminación */ }
+                        onEdit = { /* TODO */ },
+                        onDelete = { /* TODO */ }
                     )
                 }
             }
