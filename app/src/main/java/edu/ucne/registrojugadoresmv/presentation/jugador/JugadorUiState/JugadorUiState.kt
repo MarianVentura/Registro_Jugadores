@@ -12,5 +12,17 @@ data class JugadorUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
-    val success: Boolean = false)
-    val selectedJugadorId: Int? = null
+    val selectedJugador: Jugador? = null,
+    val showDeleteDialog: Boolean = false,
+    val isEditing: Boolean = false
+)
+
+// Extensiones útiles para el estado
+val JugadorUiState.isSuccess: Boolean
+    get() = successMessage != null
+
+val JugadorUiState.hasError: Boolean
+    get() = errorMessage != null || nombresError != null || partidasError != null
+
+val JugadorUiState.canSave: Boolean
+    get() = nombres.isNotBlank() && partidas.isNotBlank() && !isLoading
