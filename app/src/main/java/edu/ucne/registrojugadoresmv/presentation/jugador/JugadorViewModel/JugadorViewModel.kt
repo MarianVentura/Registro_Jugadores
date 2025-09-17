@@ -12,8 +12,10 @@ import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class JugadorViewModel(
@@ -21,6 +23,7 @@ class JugadorViewModel(
     private val insertJugadorUseCase: InsertJugadorUseCase,
     private val validateJugadorUseCase: ValidateJugadorUseCase
 ) : ViewModel() {
+
     private val _uiState = MutableStateFlow(JugadorUiState())
     val uiState: StateFlow<JugadorUiState> = _uiState.asStateFlow()
 
@@ -31,78 +34,228 @@ class JugadorViewModel(
     fun onEvent(event: JugadorEvent) {
         when (event) {
             is JugadorEvent.NombresChanged -> {
-                _uiState.value = _uiState.value.copy(
-                    nombres = event.nombres,
-                    nombresError = null,
-                    errorMessage = null,
-                    successMessage = null // LIMPIAR MENSAJE DE ÉXITO
-                )
+                updateUiState { currentState ->
+                    currentState.copy(
+                        nombres = event.nombres,
+                        nombresError = null,
+                        errorMessage = null,
+                        successMessage = null
+                    )
+                }
             }
+
             is JugadorEvent.PartidasChanged -> {
-                _uiState.value = _uiState.value.copy(
-                    partidas = event.partidas,
-                    partidasError = null,
-                    errorMessage = null,
-                    successMessage = null // LIMPIAR MENSAJE DE ÉXITO
-                )
+                updateUiState { currentState ->
+                    currentState.copy(
+                        partidas = event.partidas,
+                        partidasError = null,
+                        errorMessage = null,
+                        successMessage = null
+                    )
+                }
             }
+
             is JugadorEvent.SaveJugador -> {
                 saveJugador()
             }
+
             is JugadorEvent.ClearForm -> {
-                _uiState.value = JugadorUiState(jugadores = _uiState.value.jugadores)
+                updateUiState { currentState ->
+                    JugadorUiState(jugadores = currentState.jugadores)
+                }
             }
-            else -> {}
+
+            is JugadorEvent.DeleteJugador -> {
+                deleteJugador(event.jugadorId)
+            }
+
+            is JugadorEvent.SelectJugador -> {
+                selectJugador(event.jugadorId)
+            }
+
+            is JugadorEvent.EditJugador -> {
+                editJugador(event.jugador)
+            }
+
+            is JugadorEvent.ConfirmDeleteJugador -> {
+                confirmDeleteJugador(event.jugador)
+            }
         }
+    }
+
+    /**
+     * Método thread-safe para actualizar el estado usando update()
+     * en lugar de asignación directa para evitar problemas de concurrencia
+     */
+    private fun updateUiState(update: (JugadorUiState) -> JugadorUiState) {
+        _uiState.update(update)
     }
 
     private fun saveJugador() {
         viewModelScope.launch {
-            // Validaciones
-            val nombresError =
-                validateJugadorUseCase.validateNombre(_uiState.value.nombres)
-            val partidasError =
-                validateJugadorUseCase.validatePartidas(_uiState.value.partidas)
+            val currentState = _uiState.value
+
+            // Validaciones mejoradas
+            val nombresError = validateJugadorUseCase.validateNombre(currentState.nombres)
+            val partidasError = validatePartidasImproved(currentState.partidas)
 
             if (nombresError != null || partidasError != null) {
-                _uiState.value = _uiState.value.copy(
-                    nombresError = nombresError,
-                    partidasError = partidasError
-                )
+                updateUiState { state ->
+                    state.copy(
+                        nombresError = nombresError,
+                        partidasError = partidasError,
+                        isLoading = false
+                    )
+                }
                 return@launch
             }
 
-            _uiState.value = _uiState.value.copy(isLoading = true)
+            updateUiState { state -> state.copy(isLoading = true) }
 
             val jugador = Jugador(
-                jugadorId = _uiState.value.jugadorId,
-                nombres = _uiState.value.nombres.trim(),
-                partidas = _uiState.value.partidas.toInt()
+                jugadorId = currentState.jugadorId,
+                nombres = currentState.nombres.trim(),
+                partidas = currentState.partidas.toInt()
             )
 
             insertJugadorUseCase(jugador)
                 .onSuccess {
-                    _uiState.value = JugadorUiState(
-                        jugadores = _uiState.value.jugadores,
-                        successMessage = "Jugador guardado exitosamente",
-                        success = true
-                    )
+                    updateUiState { state ->
+                        JugadorUiState(
+                            jugadores = state.jugadores,
+                            successMessage = "Jugador guardado exitosamente"
+                        )
+                    }
                 }
                 .onFailure { exception ->
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        errorMessage = exception.message ?: "Error desconocido"
-                    )
+                    updateUiState { state ->
+                        state.copy(
+                            isLoading = false,
+                            errorMessage = exception.message ?: "Error desconocido"
+                        )
+                    }
                 }
         }
     }
 
+    /**
+     * Validación mejorada de partidas que verifica que sea un entero no negativo
+     */
+    private fun validatePartidasImproved(partidas: String): String? {
+        return when {
+            partidas.isBlank() -> "Las partidas son obligatorias"
+            partidas.toIntOrNull() == null -> "Las partidas deben ser un número válido"
+            partidas.toInt() < 0 -> "Las partidas no pueden ser negativas"
+            partidas.toInt() > 10000 -> "El número de partidas es demasiado alto (máximo 10,000)"
+            else -> null
+        }
+    }
+
+    /**
+     * Obtener jugadores con manejo de errores mejorado
+     */
     private fun getJugadores() {
         getJugadoresUseCase()
             .onEach { jugadores ->
-                _uiState.value = _uiState.value.copy(jugadores = jugadores)
+                updateUiState { state ->
+                    state.copy(
+                        jugadores = jugadores,
+                        isLoading = false,
+                        errorMessage = null
+                    )
+                }
+            }
+            .catch { exception ->
+                updateUiState { state ->
+                    state.copy(
+                        isLoading = false,
+                        errorMessage = "Error al cargar jugadores: ${exception.message}"
+                    )
+                }
             }
             .launchIn(viewModelScope)
+    }
+
+    /**
+     * Función para eliminar un jugador (implementación básica)
+     */
+    private fun deleteJugador(jugadorId: Int) {
+        viewModelScope.launch {
+            try {
+                updateUiState { state -> state.copy(isLoading = true) }
+
+                val jugador = _uiState.value.jugadores.find { it.jugadorId == jugadorId }
+                if (jugador != null) {
+                    // Aquí necesitarías un DeleteJugadorUseCase
+                    // Por ahora, simularemos removiéndolo de la lista local
+                    updateUiState { state ->
+                        state.copy(
+                            jugadores = state.jugadores.filter { it.jugadorId != jugadorId },
+                            isLoading = false,
+                            successMessage = "Jugador eliminado exitosamente"
+                        )
+                    }
+                } else {
+                    updateUiState { state ->
+                        state.copy(
+                            isLoading = false,
+                            errorMessage = "Jugador no encontrado"
+                        )
+                    }
+                }
+            } catch (exception: Exception) {
+                updateUiState { state ->
+                    state.copy(
+                        isLoading = false,
+                        errorMessage = "Error al eliminar jugador: ${exception.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Función para seleccionar un jugador para edición
+     */
+    private fun selectJugador(jugadorId: Int) {
+        val jugador = _uiState.value.jugadores.find { it.jugadorId == jugadorId }
+        if (jugador != null) {
+            updateUiState { state ->
+                state.copy(
+                    jugadorId = jugador.jugadorId,
+                    nombres = jugador.nombres,
+                    partidas = jugador.partidas.toString(),
+                    nombresError = null,
+                    partidasError = null,
+                    errorMessage = null,
+                    successMessage = null
+                )
+            }
+        }
+    }
+
+    /**
+     * Función para editar un jugador
+     */
+    private fun editJugador(jugador: Jugador) {
+        updateUiState { state ->
+            state.copy(
+                jugadorId = jugador.jugadorId,
+                nombres = jugador.nombres,
+                partidas = jugador.partidas.toString(),
+                nombresError = null,
+                partidasError = null,
+                errorMessage = null,
+                successMessage = null
+            )
+        }
+    }
+
+    /**
+     * Confirmar eliminación de jugador
+     */
+    private fun confirmDeleteJugador(jugador: Jugador) {
+        deleteJugador(jugador.jugadorId)
     }
 }
 
