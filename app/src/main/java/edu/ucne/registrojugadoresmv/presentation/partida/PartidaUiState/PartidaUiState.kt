@@ -21,6 +21,7 @@ data class PartidaUiState(
     val partidas: List<PartidaConNombres> = emptyList(),
     val jugadores: List<Jugador> = emptyList(),
     val selectedPartida: Partida? = null,
+    val selectedPartidaId: Int? = null,
 
     // Estados de UI
     val isLoading: Boolean = false,
@@ -34,26 +35,3 @@ data class PartidaUiState(
     val showJugador2Dropdown: Boolean = false,
     val showGanadorDropdown: Boolean = false
 )
-
-// Extensiones útiles para el estado
-val PartidaUiState.isSuccess: Boolean
-    get() = successMessage != null
-
-val PartidaUiState.hasError: Boolean
-    get() = errorMessage != null || fechaError != null || jugadoresError != null || ganadorError != null
-
-val PartidaUiState.canSave: Boolean
-    get() = fecha.isNotBlank() && jugador1Id != 0 && jugador2Id != 0 && !isLoading
-
-val PartidaUiState.jugador1Nombre: String
-    get() = jugadores.find { it.jugadorId == jugador1Id }?.nombres ?: "Seleccionar jugador"
-
-val PartidaUiState.jugador2Nombre: String
-    get() = jugadores.find { it.jugadorId == jugador2Id }?.nombres ?: "Seleccionar jugador"
-
-val PartidaUiState.ganadorNombre: String
-    get() = if (ganadorId != null) {
-        jugadores.find { it.jugadorId == ganadorId }?.nombres ?: "Ganador desconocido"
-    } else {
-        "Sin ganador"
-    }
