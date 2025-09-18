@@ -11,7 +11,7 @@ import edu.ucne.registrojugadoresmv.data.local.entities.Partida
 
 @Database(
     entities = [Jugador::class, Partida::class],
-    version = 2, // Incrementamos la versión por la nueva entidad
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
