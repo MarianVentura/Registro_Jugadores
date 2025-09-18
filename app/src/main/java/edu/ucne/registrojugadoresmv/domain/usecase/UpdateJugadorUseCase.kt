@@ -2,8 +2,9 @@ package edu.ucne.registrojugadoresmv.domain.usecase
 
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.repository.JugadorRepository
+import javax.inject.Inject
 
-class UpdateJugadorUseCase(
+class UpdateJugadorUseCase @Inject constructor(
     private val repository: JugadorRepository
 ) {
     suspend operator fun invoke(jugador: Jugador): Result<Unit> {
@@ -16,11 +17,6 @@ class UpdateJugadorUseCase(
             if (jugador.partidas < 0) {
                 return Result.failure(Exception("Las partidas no pueden ser negativas"))
             }
-
-            // Verificar que no existe otro jugador con el mismo nombre
-            val existingJugadores = repository.getAllJugadores()
-            // Esta verificación requeriría modificar el repository para obtener una lista sincrónica
-            // Por simplicidad, asumiremos que la validación se hace en el ViewModel
 
             repository.updateJugador(jugador.copy(nombres = jugador.nombres.trim()))
             Result.success(Unit)

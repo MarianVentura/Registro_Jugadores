@@ -1,8 +1,9 @@
 package edu.ucne.registrojugadoresmv.domain.usecase
 
 import edu.ucne.registrojugadoresmv.domain.repository.JugadorRepository
+import javax.inject.Inject
 
-class ValidateJugadorUseCase(
+class ValidateJugadorUseCase @Inject constructor(
     private val repository: JugadorRepository
 ) {
     suspend fun validateNombre(nombre: String): String? {
