@@ -1,4 +1,3 @@
-// domain/model/Jugador.kt
 package edu.ucne.registrojugadoresmv.domain.model
 
 data class Jugador(

@@ -2,12 +2,11 @@ package edu.ucne.registrojugadoresmv.domain.usecase
 
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.repository.JugadorRepository
-import kotlinx.coroutines.flow.Flow
 
-class GetJugadoresUseCase(
+class GetJugadorByIdUseCase(
     private val repository: JugadorRepository
 ) {
-    operator fun invoke(): Flow<List<Jugador>> {
-        return repository.getAllJugadores()
+    suspend operator fun invoke(id: Int): Jugador? {
+        return repository.getJugadorById(id)
     }
 }

@@ -1,4 +1,3 @@
-// domain/usecase/ValidateJugadorUseCase.kt
 package edu.ucne.registrojugadoresmv.domain.usecase
 
 import edu.ucne.registrojugadoresmv.domain.repository.JugadorRepository

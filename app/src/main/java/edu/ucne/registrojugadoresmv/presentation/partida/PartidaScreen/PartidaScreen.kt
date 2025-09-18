@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador
+package edu.ucne.registrojugadoresmv.presentation.partida
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -16,16 +16,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import edu.ucne.registrojugadoresmv.data.local.database.AppDatabase
+import edu.ucne.registrojugadoresmv.data.repository.PartidaRepositoryImpl
+import edu.ucne.registrojugadoresmv.data.repository.JugadorRepositoryImpl
+import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
-import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorViewModel.JugadorViewModel
+import edu.ucne.registrojugadoresmv.domain.usecase.*
+import edu.ucne.registrojugadoresmv.presentation.partida.PartidaViewModel.PartidaViewModel
+import edu.ucne.registrojugadoresmv.presentation.partida.PartidaViewModel.PartidaViewModelFactory
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JugadorScreen(viewModel: JugadorViewModel) {
+fun PartidaScreen() {
+    val context = LocalContext.current
+    val database = remember { AppDatabase.getDatabase(context) }
+    val partidaRepository = remember { PartidaRepositoryImpl(database.partidaDao()) }
+    val jugadorRepository = remember { JugadorRepositoryImpl(database.jugadorDao()) }
+    val viewModel: PartidaViewModel = viewModel(
+        factory = PartidaViewModelFactory(
+            GetPartidasUseCase(partidaRepository),
+            InsertPartidaUseCase(partidaRepository),
+            DeletePartidaUseCase(partidaRepository),
+            GetJugadoresUseCase(jugadorRepository)
+        )
+    )
     val state by viewModel.uiState.collectAsState()
 
     var showWelcome by remember { mutableStateOf(true) }
@@ -45,7 +67,7 @@ fun JugadorScreen(viewModel: JugadorViewModel) {
         enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
         exit = fadeOut() + slideOutVertically(targetOffsetY = { -it })
     ) {
-        MainRegistrationScreen(
+        MainPartidaScreen(
             state = state,
             viewModel = viewModel,
             onBackToWelcome = { showWelcome = true }
@@ -85,6 +107,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                // Icono grande
                 Box(
                     modifier = Modifier
                         .size(120.dp)
@@ -101,15 +124,16 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
+                        imageVector = Icons.Default.Trophy,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = Color(0xFF6200EE)
                     )
                 }
 
+                // Título
                 Text(
-                    text = "Tic-Tac-Toe",
+                    text = "Partidas",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 32.sp
@@ -118,7 +142,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                 )
 
                 Text(
-                    text = "Sistema de Registro de Jugadores",
+                    text = "Gestión de Partidas Tic-Tac-Toe",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color(0xFF666666),
                     textAlign = TextAlign.Center
@@ -126,8 +150,9 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Descripción
                 Text(
-                    text = "Registra a todos los jugadores que participarán en el torneo de Tic-Tac-Toe. Lleva un control completo de las partidas jugadas por cada participante.",
+                    text = "Registra y administra todas las partidas del torneo. Lleva un control completo de los enfrentamientos y resultados.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color(0xFF444444),
                     textAlign = TextAlign.Center,
@@ -136,6 +161,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
+                // Botón de inicio
                 Button(
                     onClick = onStartRegistration,
                     modifier = Modifier
@@ -158,7 +184,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                             contentDescription = null
                         )
                         Text(
-                            text = "Comenzar Registro",
+                            text = "Gestionar Partidas",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -171,9 +197,9 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainRegistrationScreen(
-    state: JugadorUiState,
-    viewModel: JugadorViewModel,
+fun MainPartidaScreen(
+    state: PartidaUiState,
+    viewModel: PartidaViewModel,
     onBackToWelcome: () -> Unit
 ) {
     Scaffold(
@@ -181,7 +207,7 @@ fun MainRegistrationScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Registro de Jugadores",
+                        text = "Gestión de Partidas",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -209,16 +235,18 @@ fun MainRegistrationScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
+            // Formulario
             item {
-                RegistrationForm(
+                PartidaForm(
                     state = state,
                     viewModel = viewModel
                 )
             }
 
+            // Lista de partidas
             item {
                 Text(
-                    text = "Jugadores Registrados (${state.jugadores.size})",
+                    text = "Partidas Registradas (${state.partidas.size})",
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -226,14 +254,21 @@ fun MainRegistrationScreen(
                 )
             }
 
-            if (state.jugadores.isEmpty()) {
-                item { EmptyPlayersCard() }
+            if (state.partidas.isEmpty()) {
+                item {
+                    EmptyPartidasCard()
+                }
             } else {
-                items(state.jugadores) { jugador ->
-                    ImprovedJugadorItem(
-                        jugador = jugador,
-                        onEdit = { /* TODO */ },
-                        onDelete = { /* TODO */ }
+                items(state.partidas) { partida ->
+                    PartidaItem(
+                        partida = partida,
+                        jugadores = state.jugadores,
+                        onEdit = {
+                            viewModel.onEvent(PartidaEvent.EditPartida(partida))
+                        },
+                        onDelete = {
+                            viewModel.onEvent(PartidaEvent.DeletePartida(partida.partidaId ?: 0))
+                        }
                     )
                 }
             }
@@ -242,9 +277,9 @@ fun MainRegistrationScreen(
 }
 
 @Composable
-fun RegistrationForm(
-    state: JugadorUiState,
-    viewModel: JugadorViewModel
+fun PartidaForm(
+    state: PartidaUiState,
+    viewModel: PartidaViewModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -259,70 +294,181 @@ fun RegistrationForm(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Nuevo Jugador",
+                text = if (state.selectedPartidaId != null) "Editar Partida" else "Nueva Partida",
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
                 color = Color(0xFF6200EE)
             )
 
-            // Name field
-            OutlinedTextField(
-                value = state.nombres,
-                onValueChange = { viewModel.onEvent(JugadorEvent.NombresChanged(it)) },
-                label = { Text("Nombre completo") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = Color(0xFF6200EE)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                isError = state.nombresError != null,
-                supportingText = {
-                    state.nombresError?.let {
-                        Text(
-                            text = it,
-                            color = MaterialTheme.colorScheme.error
+            // Dropdown para Jugador 1
+            var expandedJugador1 by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expandedJugador1,
+                onExpandedChange = { expandedJugador1 = !expandedJugador1 }
+            ) {
+                OutlinedTextField(
+                    value = state.jugadores.find { it.jugadorId == state.jugador1Id }?.nombres ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Jugador 1") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            tint = Color(0xFF6200EE)
+                        )
+                    },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJugador1) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedJugador1,
+                    onDismissRequest = { expandedJugador1 = false }
+                ) {
+                    state.jugadores.forEach { jugador ->
+                        DropdownMenuItem(
+                            text = { Text(jugador.nombres) },
+                            onClick = {
+                                viewModel.onEvent(PartidaEvent.Jugador1Changed(jugador.jugadorId ?: 0))
+                                expandedJugador1 = false
+                            }
                         )
                     }
                 }
-            )
+            }
 
-            // Games field
-            OutlinedTextField(
-                value = state.partidas,
-                onValueChange = { viewModel.onEvent(JugadorEvent.PartidasChanged(it)) },
-                label = { Text("Número de partidas") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = null,
-                        tint = Color(0xFF6200EE)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                isError = state.partidasError != null,
-                supportingText = {
-                    state.partidasError?.let {
-                        Text(
-                            text = it,
-                            color = MaterialTheme.colorScheme.error
+            // Dropdown para Jugador 2
+            var expandedJugador2 by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expandedJugador2,
+                onExpandedChange = { expandedJugador2 = !expandedJugador2 }
+            ) {
+                OutlinedTextField(
+                    value = state.jugadores.find { it.jugadorId == state.jugador2Id }?.nombres ?: "",
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Jugador 2") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            tint = Color(0xFF6200EE)
+                        )
+                    },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJugador2) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedJugador2,
+                    onDismissRequest = { expandedJugador2 = false }
+                ) {
+                    state.jugadores.forEach { jugador ->
+                        DropdownMenuItem(
+                            text = { Text(jugador.nombres) },
+                            onClick = {
+                                viewModel.onEvent(PartidaEvent.Jugador2Changed(jugador.jugadorId ?: 0))
+                                expandedJugador2 = false
+                            }
                         )
                     }
                 }
-            )
+            }
 
-            // Bottoms
+            // Dropdown para Ganador (opcional)
+            var expandedGanador by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expandedGanador,
+                onExpandedChange = { expandedGanador = !expandedGanador }
+            ) {
+                OutlinedTextField(
+                    value = when (state.ganadorId) {
+                        null -> "Sin ganador (en progreso)"
+                        0 -> "Empate"
+                        else -> state.jugadores.find { it.jugadorId == state.ganadorId }?.nombres ?: ""
+                    },
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Resultado") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Trophy,
+                            contentDescription = null,
+                            tint = Color(0xFF6200EE)
+                        )
+                    },
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedGanador) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                ExposedDropdownMenu(
+                    expanded = expandedGanador,
+                    onDismissRequest = { expandedGanador = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Sin ganador (en progreso)") },
+                        onClick = {
+                            viewModel.onEvent(PartidaEvent.GanadorChanged(null))
+                            expandedGanador = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Empate") },
+                        onClick = {
+                            viewModel.onEvent(PartidaEvent.GanadorChanged(0))
+                            expandedGanador = false
+                        }
+                    )
+                    listOf(state.jugador1Id, state.jugador2Id).forEach { jugadorId ->
+                        if (jugadorId != null) {
+                            val jugador = state.jugadores.find { it.jugadorId == jugadorId }
+                            jugador?.let {
+                                DropdownMenuItem(
+                                    text = { Text("Ganador: ${it.nombres}") },
+                                    onClick = {
+                                        viewModel.onEvent(PartidaEvent.GanadorChanged(jugadorId))
+                                        expandedGanador = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Switch para partida finalizada
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Partida finalizada",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Switch(
+                    checked = state.esFinalizada,
+                    onCheckedChange = {
+                        viewModel.onEvent(PartidaEvent.EsFinalizadaChanged(it))
+                    }
+                )
+            }
+
+            // Botones
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { viewModel.onEvent(JugadorEvent.SaveJugador) },
+                    onClick = { viewModel.onEvent(PartidaEvent.SavePartida) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -343,18 +489,17 @@ fun RegistrationForm(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Cambiado de Save a Check
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null
                             )
-                            Text("Guardar")
+                            Text(if (state.selectedPartidaId != null) "Actualizar" else "Guardar")
                         }
                     }
                 }
 
                 OutlinedButton(
-                    onClick = { viewModel.onEvent(JugadorEvent.ClearForm) },
+                    onClick = { viewModel.onEvent(PartidaEvent.ClearForm) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -373,7 +518,7 @@ fun RegistrationForm(
                 }
             }
 
-            // Messages
+            // Mensajes
             AnimatedVisibility(
                 visible = state.successMessage != null,
                 enter = slideInVertically() + fadeIn(),
@@ -423,7 +568,6 @@ fun RegistrationForm(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = null,
@@ -443,11 +587,19 @@ fun RegistrationForm(
 }
 
 @Composable
-fun ImprovedJugadorItem(
-    jugador: Jugador,
+fun PartidaItem(
+    partida: Partida,
+    jugadores: List<Jugador>,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val jugador1 = jugadores.find { it.jugadorId == partida.jugador1Id }
+    val jugador2 = jugadores.find { it.jugadorId == partida.jugador2Id }
+    val ganador = jugadores.find { it.jugadorId == partida.ganadorId }
+
+    val dateFormatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+    val fechaFormateada = dateFormatter.format(partida.fecha)
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
@@ -456,58 +608,108 @@ fun ImprovedJugadorItem(
             containerColor = Color.White
         )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            // Avatar circular
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFF6200EE).copy(alpha = 0.8f),
-                                Color(0xFF3700B3)
-                            )
-                        ),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
+            // Header con fecha y estado
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = jugador.nombres.take(2).uppercase(),
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-            }
-
-            // Player Information
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = jugador.nombres,
+                    text = "Partida #${partida.partidaId}",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold
                     ),
                     color = Color(0xFF2C2C2C)
                 )
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (partida.esFinalizada)
+                            Color(0xFF4CAF50).copy(alpha = 0.2f)
+                        else
+                            Color(0xFFFF9800).copy(alpha = 0.2f)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = if (partida.esFinalizada) "Finalizada" else "En progreso",
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (partida.esFinalizada) Color(0xFF2E7D32) else Color(0xFFE65100)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = fechaFormateada,
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFF666666)
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Enfrentamiento
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "ID: ${jugador.jugadorId} • Partidas: ${jugador.partidas}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF666666)
+                    text = jugador1?.nombres ?: "Jugador 1",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = " VS ",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = Color(0xFF6200EE)
+                )
+
+                Text(
+                    text = jugador2?.nombres ?: "Jugador 2",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
                 )
             }
 
+            // Resultado
+            if (partida.esFinalizada) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = when (partida.ganadorId) {
+                        null -> "Sin resultado"
+                        0 -> "🤝 Empate"
+                        else -> "🏆 Ganador: ${ganador?.nombres ?: "Desconocido"}"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF2E7D32),
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Botones de acción
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
             ) {
                 IconButton(
                     onClick = onEdit,
@@ -544,7 +746,7 @@ fun ImprovedJugadorItem(
 }
 
 @Composable
-fun EmptyPlayersCard() {
+fun EmptyPartidasCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -560,16 +762,15 @@ fun EmptyPlayersCard() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
             Icon(
-                imageVector = Icons.Default.Person,
+                imageVector = Icons.Default.SportsSoccer,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = Color(0xFF9E9E9E)
             )
 
             Text(
-                text = "No hay jugadores registrados",
+                text = "No hay partidas registradas",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
@@ -577,7 +778,7 @@ fun EmptyPlayersCard() {
             )
 
             Text(
-                text = "Completa el formulario de arriba para agregar tu primer jugador",
+                text = "Completa el formulario de arriba para agregar tu primera partida",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color(0xFF9E9E9E),
                 textAlign = TextAlign.Center

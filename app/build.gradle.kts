@@ -7,9 +7,13 @@ plugins {
 }
 
 
+
+
 android {
     namespace = "edu.ucne.registrojugadoresmv"
     compileSdk = 36
+
+
 
 
     defaultConfig {
@@ -20,8 +24,12 @@ android {
         versionName = "1.0"
 
 
+
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+
 
 
     buildTypes {
@@ -34,15 +42,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlin {
-        jvmToolchain(17) // Or your desired JVM version as an Int
+        jvmToolchain(11) // Or your desired JVM version as an Int
     }
     buildFeatures {
         compose = true
     }
+
 
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.3"
@@ -55,7 +64,11 @@ android {
 }
 
 
+
+
 dependencies {
+
+
 
 
     implementation(libs.androidx.core.ktx)
@@ -75,9 +88,13 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
 
+
+
     //navigation
     implementation("androidx.navigation:navigation-compose:2.9.3")
     implementation(libs.kotlinx.serialization.json)
+
+
 
 
     //room
@@ -86,5 +103,6 @@ dependencies {
     ksp("androidx.room:room-compiler:2.7.2")
     //  optional - Kotlin Extensions and Coroutines support for Room
     implementation("androidx.room:room-ktx:2.7.2")
+
 
 }

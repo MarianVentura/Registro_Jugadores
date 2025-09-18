@@ -5,15 +5,18 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import android.content.Context
 import edu.ucne.registrojugadoresmv.data.local.dao.JugadorDao
+import edu.ucne.registrojugadoresmv.data.local.dao.PartidaDao
 import edu.ucne.registrojugadoresmv.data.local.entities.Jugador
+import edu.ucne.registrojugadoresmv.data.local.entities.Partida
 
 @Database(
-    entities = [Jugador::class],
-    version = 1,
+    entities = [Jugador::class, Partida::class],
+    version = 2, // Incrementamos la versión por la nueva entidad
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun jugadorDao(): JugadorDao
+    abstract fun partidaDao(): PartidaDao
 
     companion object {
         @Volatile
@@ -25,7 +28,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "jugadores_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration() // Para desarrollo, elimina datos en cambio de esquema
+                    .build()
                 INSTANCE = instance
                 instance
             }
