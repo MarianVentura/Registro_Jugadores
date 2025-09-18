@@ -3,7 +3,6 @@ package edu.ucne.registrojugadoresmv.data.local.entities
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import java.time.LocalDate
 
 @Entity(
     tableName = "Partidas",
@@ -31,9 +30,9 @@ import java.time.LocalDate
 data class Partida(
     @PrimaryKey(autoGenerate = true)
     val partidaId: Int = 0,
-    val fecha: String, // Usando String para simplificar la persistencia de fecha
+    val fecha: String,
     val jugador1Id: Int,
     val jugador2Id: Int,
-    val ganadorId: Int? = null, // Nullable porque puede no haber ganador todavía
+    val ganadorId: Int? = null,
     val esFinalizada: Boolean = false
 )
