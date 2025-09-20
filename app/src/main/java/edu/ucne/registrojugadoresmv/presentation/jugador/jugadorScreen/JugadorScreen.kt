@@ -270,7 +270,8 @@ fun RegistrationForm(
             // Name field
             OutlinedTextField(
                 value = state.nombres,
-                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.NombresChanged(it)) },
+                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.NombresChanged(it)
+                ) },
                 label = { Text("Nombre completo") },
                 leadingIcon = {
                     Icon(
@@ -295,7 +296,8 @@ fun RegistrationForm(
             // Games field
             OutlinedTextField(
                 value = state.partidas,
-                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.PartidasChanged(it)) },
+                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.PartidasChanged(it)
+                ) },
                 label = { Text("Número de partidas") },
                 leadingIcon = {
                     Icon(
@@ -323,7 +325,8 @@ fun RegistrationForm(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.SaveJugador) },
+                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.SaveJugador)
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -355,7 +358,7 @@ fun RegistrationForm(
                 }
 
                 OutlinedButton(
-                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.ClearForm) },
+                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.ClearForm) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
