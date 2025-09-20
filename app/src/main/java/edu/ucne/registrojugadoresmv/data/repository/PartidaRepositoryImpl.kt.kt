@@ -1,8 +1,8 @@
 package edu.ucne.registrojugadoresmv.data.repository
 
 import edu.ucne.registrojugadoresmv.data.local.dao.PartidaDao
-import edu.ucne.registrojugadoresmv.data.mappers.toEntity
-import edu.ucne.registrojugadoresmv.data.mappers.toModel
+import edu.ucne.registrojugadoresmv.data.mapper.toDomain
+import edu.ucne.registrojugadoresmv.data.mapper.toEntity
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.repository.PartidaRepository
 import kotlinx.coroutines.flow.Flow
@@ -10,26 +10,27 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class PartidaRepositoryImpl @Inject constructor(
-    private val partidaDao: PartidaDao
+    private val dao: PartidaDao
 ) : PartidaRepository {
 
-    override fun getPartidas(): Flow<List<Partida>> =
-        partidaDao.getAll().map { entities ->
-            entities.map { it.toModel() }
+    override fun observePartida(): Flow<List<Partida>> =
+        dao.ObserveAll().map { list ->
+            list.map { it.toDomain() }
         }
 
-    override suspend fun getPartida(id: Int): Partida? =
-        partidaDao.find(id)?.toModel()
+    override suspend fun getPartida(id: Int?): Partida? =
+        dao.getById(id)?.toDomain()
 
-    override suspend fun savePartida(partida: Partida) {
-        partidaDao.save(partida.toEntity())
+    override suspend fun upsert(partida: Partida): Int {
+        dao.upsert(partida.toEntity())
+        return partida.partidaId
     }
 
-    override suspend fun deletePartida(partida: Partida) {
-        partidaDao.delete(partida.toEntity())
+    override suspend fun delete(partida: Partida) {
+        dao.delete(partida.toEntity())
     }
 
-    override suspend fun deletePartidaById(id: Int) {
-        partidaDao.deleteById(id)
+    override suspend fun deleteById(id: Int) {
+        dao.deleteById(id)
     }
 }

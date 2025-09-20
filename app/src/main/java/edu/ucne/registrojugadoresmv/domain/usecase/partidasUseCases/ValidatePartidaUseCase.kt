@@ -1,66 +1,28 @@
-package edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases
+package edu.ucne.registrojugadoresmv.domain.usecase
 
-import edu.ucne.registrojugadoresmv.domain.repository.JugadorRepository
-import javax.inject.Inject
+data class ValidacionesPartidas(
+    val isValid: Boolean,
+    val error: String? = null
+)
 
-class ValidatePartidaUseCase @Inject constructor(
-    private val jugadorRepository: JugadorRepository
-) {
-
-    suspend fun validateJugador1(jugadorId: Int): String? {
-        return when {
-            jugadorId <= 0 -> "Debe seleccionar el jugador 1"
-            jugadorRepository.getJugador(jugadorId) == null -> "El jugador 1 seleccionado no existe"
-            else -> null
-        }
+fun validateJugador1(value: String, jugador2: String): ValidacionesPartidas {
+    if (value.isBlank()) {
+        return ValidacionesPartidas(false, "Debe de haber un jugador 1.")
     }
-
-    suspend fun validateJugador2(jugadorId: Int): String? {
-        return when {
-            jugadorId <= 0 -> "Debe seleccionar el jugador 2"
-            jugadorRepository.getJugador(jugadorId) == null -> "El jugador 2 seleccionado no existe"
-            else -> null
-        }
+    val jugador1 = value.toIntOrNull()
+    if (jugador1 == null || jugador1 <= 0) {
+        return ValidacionesPartidas(false, "El jugador 1 debe de ser válido.")
     }
+    return ValidacionesPartidas(true)
+}
 
-    fun validateJugadoresDiferentes(jugador1Id: Int, jugador2Id: Int): String? {
-        return if (jugador1Id == jugador2Id) {
-            "Los jugadores deben ser diferentes"
-        } else null
+fun validateJugador2(value: String, jugador1: String): ValidacionesPartidas {
+    if (value.isBlank()) {
+        return ValidacionesPartidas(false, "Debe de haber un jugador 2.")
     }
-
-    suspend fun validateGanador(
-        esFinalizada: Boolean,
-        ganadorId: Int?,
-        jugador1Id: Int,
-        jugador2Id: Int
-    ): String? {
-        return when {
-            esFinalizada && ganadorId == null -> "Debe seleccionar un ganador para partidas finalizadas"
-            esFinalizada && ganadorId != null && ganadorId != 0 &&
-                    ganadorId != jugador1Id && ganadorId != jugador2Id ->
-                "El ganador debe ser uno de los jugadores participantes o empate (0)"
-            ganadorId != null && ganadorId > 0 &&
-                    jugadorRepository.getJugador(ganadorId) == null ->
-                "El jugador ganador seleccionado no existe"
-            else -> null
-        }
+    val jugador2 = value.toIntOrNull()
+    if (jugador2 == null || jugador2 <= 0) {
+        return ValidacionesPartidas(false, "El jugador 2 debe de ser válido.")
     }
-
-    // Método de validación completa
-    suspend fun validatePartida(
-        jugador1Id: Int,
-        jugador2Id: Int,
-        ganadorId: Int?,
-        esFinalizada: Boolean
-    ): List<String> {
-        val errors = mutableListOf<String>()
-
-        validateJugador1(jugador1Id)?.let { errors.add(it) }
-        validateJugador2(jugador2Id)?.let { errors.add(it) }
-        validateJugadoresDiferentes(jugador1Id, jugador2Id)?.let { errors.add(it) }
-        validateGanador(esFinalizada, ganadorId, jugador1Id, jugador2Id)?.let { errors.add(it) }
-
-        return errors
-    }
+    return ValidacionesPartidas(true)
 }

@@ -9,18 +9,18 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PartidaDao {
-    @Query("SELECT * FROM Partidas ORDER BY partidaId DESC")
-    fun getAll(): Flow<List<PartidaEntity>>
+    @Query(value = "SELECT * FROM Partidas ORDER BY partidaId DESC")
+    fun ObserveAll(): Flow<List<PartidaEntity>>
 
-    @Query("SELECT * FROM Partidas WHERE partidaId = :id")
-    suspend fun find(id: Int): PartidaEntity?
+    @Query(value = "SELECT * FROM Partidas WHERE partidaId = :id")
+    suspend fun getById(id: Int?): PartidaEntity?
 
     @Upsert
-    suspend fun save(partida: PartidaEntity)
+    suspend fun upsert(entity: PartidaEntity)
 
     @Delete
-    suspend fun delete(partida: PartidaEntity)
+    suspend fun delete(entity: PartidaEntity)
 
-    @Query("DELETE FROM Partidas WHERE partidaId = :id")
+    @Query(value = "DELETE FROM Partidas WHERE partidaId = :id")
     suspend fun deleteById(id: Int)
 }

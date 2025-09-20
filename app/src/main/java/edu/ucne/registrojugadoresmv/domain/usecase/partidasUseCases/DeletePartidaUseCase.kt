@@ -10,3 +10,4 @@ class DeletePartidaUseCase @Inject constructor(
         repository.deletePartidaById(partidaId)
     }
 }
+

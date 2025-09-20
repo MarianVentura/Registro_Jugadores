@@ -1,9 +1,9 @@
-package edu.ucne.registrojugadoresmv.data.mappers
+package edu.ucne.registrojugadoresmv.data.mapper
 
 import edu.ucne.registrojugadoresmv.data.local.entities.PartidaEntity
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 
-fun PartidaEntity.toModel(): Partida = Partida(
+fun PartidaEntity.toDomain(): Partida = Partida(
     partidaId = partidaId,
     fecha = fecha,
     jugador1Id = jugador1Id,

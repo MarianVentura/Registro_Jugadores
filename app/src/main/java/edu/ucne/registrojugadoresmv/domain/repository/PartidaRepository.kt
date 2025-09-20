@@ -4,9 +4,9 @@ import edu.ucne.registrojugadoresmv.domain.model.Partida
 import kotlinx.coroutines.flow.Flow
 
 interface PartidaRepository {
-    fun getPartidas(): Flow<List<Partida>>
-    suspend fun getPartida(id: Int): Partida?
-    suspend fun savePartida(partida: Partida)
-    suspend fun deletePartida(partida: Partida)
-    suspend fun deletePartidaById(id: Int)
+    fun observePartida(): Flow<List<Partida>>
+    suspend fun getPartida(id: Int?): Partida?
+    suspend fun upsert(partida: Partida): Int
+    suspend fun delete(partida: Partida)
+    suspend fun deleteById(id: Int)
 }
