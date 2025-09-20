@@ -1,30 +1,21 @@
 package edu.ucne.registrojugadoresmv.presentation.partida
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.usecase.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.DeletePartidaUseCase
+import edu.ucne.registrojugadoresmv.presentation.partida.PartidaEvent.PartidaEvent
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import javax.inject.Inject
+import java.util.Date
 
-@HiltViewModel
-class PartidaViewModel @Inject constructor(
+class PartidaViewModel(
     private val getPartidasUseCase: GetPartidasUseCase,
+    private val getPartidaUseCase: GetPartidaUseCase,
     private val insertPartidaUseCase: InsertPartidaUseCase,
-    private val updatePartidaUseCase: UpdatePartidaUseCase,
     private val deletePartidaUseCase: DeletePartidaUseCase,
-    private val getPartidaByIdUseCase: GetPartidaByIdUseCase,
-    private val validatePartidaUseCase: ValidatePartidaUseCase,
     private val getJugadoresUseCase: GetJugadoresUseCase
 ) : ViewModel() {
 
@@ -32,303 +23,196 @@ class PartidaViewModel @Inject constructor(
     val uiState: StateFlow<PartidaUiState> = _uiState.asStateFlow()
 
     init {
-        loadData()
+        loadPartidas()
+        loadJugadores()
     }
 
     fun onEvent(event: PartidaEvent) {
         when (event) {
-            is PartidaEvent.FechaChanged -> {
-                updateUiState { currentState ->
-                    currentState.copy(
-                        fecha = event.fecha,
-                        fechaError = null,
-                        errorMessage = null,
-                        successMessage = null
-                    )
-                }
-            }
-
             is PartidaEvent.Jugador1Changed -> {
-                updateUiState { currentState ->
-                    currentState.copy(
-                        jugador1Id = event.jugador1Id,
-                        jugadoresError = null,
-                        ganadorId = if (currentState.ganadorId == event.jugador1Id) null else currentState.ganadorId,
-                        errorMessage = null,
-                        successMessage = null,
-                        showJugador1Dropdown = false
-                    )
-                }
+                _uiState.value = _uiState.value.copy(
+                    jugador1Id = event.jugadorId,
+                    jugador1Error = null,
+                    errorMessage = null,
+                    successMessage = null
+                )
             }
-
             is PartidaEvent.Jugador2Changed -> {
-                updateUiState { currentState ->
-                    currentState.copy(
-                        jugador2Id = event.jugador2Id,
-                        jugadoresError = null,
-                        ganadorId = if (currentState.ganadorId == event.jugador2Id) null else currentState.ganadorId,
-                        errorMessage = null,
-                        successMessage = null,
-                        showJugador2Dropdown = false
-                    )
-                }
+                _uiState.value = _uiState.value.copy(
+                    jugador2Id = event.jugadorId,
+                    jugador2Error = null,
+                    errorMessage = null,
+                    successMessage = null
+                )
             }
-
             is PartidaEvent.GanadorChanged -> {
-                updateUiState { currentState ->
-                    currentState.copy(
-                        ganadorId = event.ganadorId,
-                        ganadorError = null,
-                        errorMessage = null,
-                        successMessage = null,
-                        showGanadorDropdown = false
-                    )
-                }
+                _uiState.value = _uiState.value.copy(
+                    ganadorId = event.ganadorId,
+                    errorMessage = null,
+                    successMessage = null
+                )
             }
-
             is PartidaEvent.EsFinalizadaChanged -> {
-                updateUiState { currentState ->
-                    currentState.copy(
-                        esFinalizada = event.esFinalizada,
-                        ganadorId = if (!event.esFinalizada) null else currentState.ganadorId,
-                        ganadorError = null,
-                        errorMessage = null,
-                        successMessage = null
-                    )
-                }
+                _uiState.value = _uiState.value.copy(
+                    esFinalizada = event.esFinalizada,
+                    ganadorId = if (!event.esFinalizada) null else _uiState.value.ganadorId,
+                    errorMessage = null,
+                    successMessage = null
+                )
             }
-
-            is PartidaEvent.SavePartida -> {
-                savePartida()
-            }
-
-            is PartidaEvent.ClearForm -> {
-                clearForm()
-            }
-
-            is PartidaEvent.SelectPartida -> {
-                selectPartida(event.partidaId)
-            }
-
-            is PartidaEvent.EditPartida -> {
-                editPartida(event.partida)
-            }
-
-            is PartidaEvent.DeletePartida -> {
-                updateUiState { it.copy(showDeleteDialog = true) }
-            }
-
-            is PartidaEvent.ConfirmDeletePartida -> {
-                deletePartida(event.partida)
-            }
-
-            is PartidaEvent.DismissDeleteDialog -> {
-                updateUiState { it.copy(showDeleteDialog = false) }
-            }
-
-            is PartidaEvent.LoadJugadores -> {
-                loadJugadores()
-            }
-
-            else -> {}
+            PartidaEvent.SavePartida -> savePartida()
+            PartidaEvent.ClearForm -> clearForm()
+            is PartidaEvent.EditPartida -> editPartida(event.partida)
+            is PartidaEvent.DeletePartida -> deletePartida(event.partidaId)
+            is PartidaEvent.SelectPartida -> selectPartida(event.partidaId)
+            is PartidaEvent.ConfirmDeletePartida -> deletePartida(event.partida.partidaId ?: 0)
         }
     }
 
-    private fun updateUiState(update: (PartidaUiState) -> PartidaUiState) {
-        _uiState.update(update)
-    }
-
-    private fun loadData() {
-        loadPartidas()
-        loadJugadores()
-        // Establecer fecha actual por defecto
-        val fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
-        updateUiState { it.copy(fecha = fechaActual) }
-    }
-
     private fun loadPartidas() {
-        getPartidasUseCase()
-            .onEach { partidas ->
-                updateUiState { state ->
-                    state.copy(
-                        partidas = partidas,
-                        isLoading = false
-                    )
-                }
+        viewModelScope.launch {
+            getPartidasUseCase().collect { partidas ->
+                _uiState.value = _uiState.value.copy(partidas = partidas)
             }
-            .catch { exception ->
-                updateUiState { state ->
-                    state.copy(
-                        isLoading = false,
-                        errorMessage = "Error al cargar partidas: ${exception.message}"
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
+        }
     }
 
     private fun loadJugadores() {
-        getJugadoresUseCase()
-            .onEach { jugadores ->
-                updateUiState { state ->
-                    state.copy(jugadores = jugadores)
-                }
+        viewModelScope.launch {
+            getJugadoresUseCase().collect { jugadores ->
+                _uiState.value = _uiState.value.copy(jugadores = jugadores)
             }
-            .catch { exception ->
-                updateUiState { state ->
-                    state.copy(
-                        errorMessage = "Error al cargar jugadores: ${exception.message}"
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
+        }
     }
 
     private fun savePartida() {
         viewModelScope.launch {
-            val currentState = _uiState.value
+            val state = _uiState.value
 
-            // Validaciones
-            val fechaError = validatePartidaUseCase.validateFecha(currentState.fecha)
-            val jugadoresError = validatePartidaUseCase.validateJugadores(
-                currentState.jugador1Id,
-                currentState.jugador2Id
-            )
-            val ganadorError = validatePartidaUseCase.validateGanador(
-                currentState.ganadorId,
-                currentState.esFinalizada,
-                currentState.jugador1Id,
-                currentState.jugador2Id
-            )
-
-            if (fechaError != null || jugadoresError != null || ganadorError != null) {
-                updateUiState { state ->
-                    state.copy(
-                        fechaError = fechaError,
-                        jugadoresError = jugadoresError,
-                        ganadorError = ganadorError,
-                        isLoading = false
-                    )
-                }
+            // Validaciones básicas
+            if (state.jugador1Id == null || state.jugador1Id <= 0) {
+                _uiState.value = state.copy(jugador1Error = "Debe seleccionar el jugador 1")
                 return@launch
             }
 
-            updateUiState { state -> state.copy(isLoading = true) }
+            if (state.jugador2Id == null || state.jugador2Id <= 0) {
+                _uiState.value = state.copy(jugador2Error = "Debe seleccionar el jugador 2")
+                return@launch
+            }
+
+            if (state.jugador1Id == state.jugador2Id) {
+                _uiState.value = state.copy(
+                    errorMessage = "Los jugadores deben ser diferentes"
+                )
+                return@launch
+            }
+
+            _uiState.value = state.copy(isLoading = true)
 
             val partida = Partida(
-                partidaId = currentState.partidaId,
-                fecha = currentState.fecha,
-                jugador1Id = currentState.jugador1Id,
-                jugador2Id = currentState.jugador2Id,
-                ganadorId = currentState.ganadorId,
-                esFinalizada = currentState.esFinalizada
+                partidaId = state.selectedPartidaId,
+                fecha = Date(),
+                jugador1Id = state.jugador1Id,
+                jugador2Id = state.jugador2Id,
+                ganadorId = state.ganadorId,
+                esFinalizada = state.esFinalizada
             )
 
-            val result = if (currentState.isEditing) {
-                updatePartidaUseCase(partida)
-            } else {
-                insertPartidaUseCase(partida)
-            }
-
-            result
+            insertPartidaUseCase(partida)
                 .onSuccess {
-                    clearForm()
-                    updateUiState { state ->
-                        state.copy(
-                            successMessage = if (currentState.isEditing)
-                                "Partida actualizada exitosamente"
-                            else
-                                "Partida guardada exitosamente",
-                            isLoading = false
-                        )
+                    val message = if (state.selectedPartidaId != null) {
+                        "Partida actualizada exitosamente"
+                    } else {
+                        "Partida guardada exitosamente"
                     }
-                }
-                .onFailure { exception ->
-                    updateUiState { state ->
-                        state.copy(
-                            isLoading = false,
-                            errorMessage = exception.message ?: "Error desconocido"
-                        )
-                    }
-                }
-        }
-    }
 
-    private fun selectPartida(partidaId: Int) {
-        viewModelScope.launch {
-            val partida = getPartidaByIdUseCase(partidaId)
-            if (partida != null) {
-                updateUiState { state ->
-                    state.copy(
-                        partidaId = partida.partidaId,
-                        fecha = partida.fecha,
-                        jugador1Id = partida.jugador1Id,
-                        jugador2Id = partida.jugador2Id,
-                        ganadorId = partida.ganadorId,
-                        esFinalizada = partida.esFinalizada,
-                        isEditing = true,
-                        fechaError = null,
-                        jugadoresError = null,
-                        ganadorError = null,
-                        errorMessage = null,
-                        successMessage = null
+                    _uiState.value = PartidaUiState(
+                        partidas = state.partidas,
+                        jugadores = state.jugadores,
+                        successMessage = message
                     )
                 }
-            }
+                .onFailure { exception ->
+                    _uiState.value = state.copy(
+                        isLoading = false,
+                        errorMessage = exception.message ?: "Error desconocido"
+                    )
+                }
         }
     }
 
     private fun editPartida(partida: Partida) {
-        updateUiState { state ->
-            state.copy(
-                partidaId = partida.partidaId,
-                fecha = partida.fecha,
-                jugador1Id = partida.jugador1Id,
-                jugador2Id = partida.jugador2Id,
-                ganadorId = partida.ganadorId,
-                esFinalizada = partida.esFinalizada,
-                isEditing = true,
-                fechaError = null,
-                jugadoresError = null,
-                ganadorError = null,
-                errorMessage = null,
-                successMessage = null
-            )
-        }
+        _uiState.value = _uiState.value.copy(
+            selectedPartidaId = partida.partidaId,
+            jugador1Id = partida.jugador1Id,
+            jugador2Id = partida.jugador2Id,
+            ganadorId = partida.ganadorId,
+            esFinalizada = partida.esFinalizada,
+            jugador1Error = null,
+            jugador2Error = null,
+            errorMessage = null,
+            successMessage = null
+        )
     }
 
-    private fun deletePartida(partida: Partida) {
+    private fun selectPartida(partidaId: Int) {
         viewModelScope.launch {
-            updateUiState { state -> state.copy(isLoading = true, showDeleteDialog = false) }
-
-            deletePartidaUseCase(partida)
-                .onSuccess {
-                    updateUiState { state ->
-                        state.copy(
-                            isLoading = false,
-                            successMessage = "Partida eliminada exitosamente"
-                        )
-                    }
-                }
-                .onFailure { exception ->
-                    updateUiState { state ->
-                        state.copy(
-                            isLoading = false,
-                            errorMessage = "Error al eliminar partida: ${exception.message}"
-                        )
-                    }
-                }
+            val partida = getPartidaUseCase(partidaId)
+            partida?.let {
+                editPartida(it)
+            }
+        }
+    }
+    private fun deletePartida(partidaId: Int) {
+        viewModelScope.launch {
+            try {
+                deletePartidaUseCase(partidaId)
+                _uiState.value = _uiState.value.copy(
+                    successMessage = "Partida eliminada exitosamente",
+                    errorMessage = null
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Error al eliminar partida: ${e.message}",
+                    successMessage = null
+                )
+            }
         }
     }
 
     private fun clearForm() {
-        val fechaActual = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE)
-        updateUiState { state ->
-            PartidaUiState(
-                partidas = state.partidas,
-                jugadores = state.jugadores,
-                fecha = fechaActual
-            )
+        _uiState.value = _uiState.value.copy(
+            selectedPartidaId = null,
+            jugador1Id = null,
+            jugador2Id = null,
+            ganadorId = null,
+            esFinalizada = false,
+            jugador1Error = null,
+            jugador2Error = null,
+            errorMessage = null,
+            successMessage = null
+        )
+    }
+}
+
+class PartidaViewModelFactory(
+    private val getPartidasUseCase: GetPartidasUseCase,
+    private val getPartidaUseCase: GetPartidaUseCase,
+    private val insertPartidaUseCase: InsertPartidaUseCase,
+    private val deletePartidaUseCase: DeletePartidaUseCase,
+    private val getJugadoresUseCase: GetJugadoresUseCase
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(PartidaViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return PartidaViewModel(
+                getPartidasUseCase,
+                getPartidaUseCase,
+                insertPartidaUseCase,
+                deletePartidaUseCase,
+                getJugadoresUseCase
+            ) as T
         }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
