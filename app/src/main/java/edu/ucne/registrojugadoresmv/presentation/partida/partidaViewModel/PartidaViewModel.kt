@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.partida
+package edu.ucne.registrojugadoresmv.presentation.partida.partidaViewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -6,16 +6,21 @@ import androidx.lifecycle.viewModelScope
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.usecase.*
 import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.DeletePartidaUseCase
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.ObservePartidaUseCase
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.GetPartidaUseCase
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.UpsertPartidaUseCase
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaUiState.PartidaUiState
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEvent
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class PartidaViewModel(
-    private val getPartidasUseCase: GetPartidasUseCase,
+    private val observePartidaUseCase: ObservePartidaUseCase,
     private val getPartidaUseCase: GetPartidaUseCase,
-    private val insertPartidaUseCase: InsertPartidaUseCase,
+    private val upsertPartidaUseCase: UpsertPartidaUseCase,
     private val deletePartidaUseCase: DeletePartidaUseCase,
     private val getJugadoresUseCase: GetJugadoresUseCase
 ) : ViewModel() {
@@ -66,13 +71,13 @@ class PartidaViewModel(
             is PartidaEvent.EditPartida -> editPartida(event.partida)
             is PartidaEvent.DeletePartida -> deletePartida(event.partidaId)
             is PartidaEvent.SelectPartida -> selectPartida(event.partidaId)
-            is PartidaEvent.ConfirmDeletePartida -> deletePartida(event.partida.partidaId ?: 0)
+            is PartidaEvent.ConfirmDeletePartida -> deletePartida(event.partida.partidaId)
         }
     }
 
     private fun loadPartidas() {
         viewModelScope.launch {
-            getPartidasUseCase().collect { partidas ->
+            observePartidaUseCase().collect { partidas ->  // ✅
                 _uiState.value = _uiState.value.copy(partidas = partidas)
             }
         }
@@ -111,15 +116,15 @@ class PartidaViewModel(
             _uiState.value = state.copy(isLoading = true)
 
             val partida = Partida(
-                partidaId = state.selectedPartidaId,
-                fecha = Date(),
+                partidaId = state.selectedPartidaId ?: 0,
+                fecha = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date()),
                 jugador1Id = state.jugador1Id,
                 jugador2Id = state.jugador2Id,
                 ganadorId = state.ganadorId,
                 esFinalizada = state.esFinalizada
             )
 
-            insertPartidaUseCase(partida)
+            upsertPartidaUseCase(partida)
                 .onSuccess {
                     val message = if (state.selectedPartidaId != null) {
                         "Partida actualizada exitosamente"
@@ -197,9 +202,9 @@ class PartidaViewModel(
 }
 
 class PartidaViewModelFactory(
-    private val getPartidasUseCase: GetPartidasUseCase,
+    private val observePartidaUseCase: ObservePartidaUseCase,
     private val getPartidaUseCase: GetPartidaUseCase,
-    private val insertPartidaUseCase: InsertPartidaUseCase,
+    private val upsertPartidaUseCase: UpsertPartidaUseCase,
     private val deletePartidaUseCase: DeletePartidaUseCase,
     private val getJugadoresUseCase: GetJugadoresUseCase
 ) : ViewModelProvider.Factory {
@@ -207,9 +212,9 @@ class PartidaViewModelFactory(
         if (modelClass.isAssignableFrom(PartidaViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return PartidaViewModel(
-                getPartidasUseCase,
+                observePartidaUseCase,
                 getPartidaUseCase,
-                insertPartidaUseCase,
+                upsertPartidaUseCase,
                 deletePartidaUseCase,
                 getJugadoresUseCase
             ) as T
