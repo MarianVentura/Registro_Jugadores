@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador
+package edu.ucne.registrojugadoresmv.presentation.jugador.jugadorScreen
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -21,7 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
-import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorViewModel.JugadorViewModel
+import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorUiState.JugadorUiState
+import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorViewModel.JugadorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -269,7 +270,7 @@ fun RegistrationForm(
             // Name field
             OutlinedTextField(
                 value = state.nombres,
-                onValueChange = { viewModel.onEvent(JugadorEvent.NombresChanged(it)) },
+                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.NombresChanged(it)) },
                 label = { Text("Nombre completo") },
                 leadingIcon = {
                     Icon(
@@ -294,7 +295,7 @@ fun RegistrationForm(
             // Games field
             OutlinedTextField(
                 value = state.partidas,
-                onValueChange = { viewModel.onEvent(JugadorEvent.PartidasChanged(it)) },
+                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.PartidasChanged(it)) },
                 label = { Text("Número de partidas") },
                 leadingIcon = {
                     Icon(
@@ -322,7 +323,7 @@ fun RegistrationForm(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { viewModel.onEvent(JugadorEvent.SaveJugador) },
+                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.SaveJugador) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -354,7 +355,7 @@ fun RegistrationForm(
                 }
 
                 OutlinedButton(
-                    onClick = { viewModel.onEvent(JugadorEvent.ClearForm) },
+                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.ClearForm) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
