@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.partida
+package edu.ucne.registrojugadoresmv.presentation.partida.partidaScreen
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -30,7 +30,10 @@ import edu.ucne.registrojugadoresmv.domain.usecase.*
 import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.DeletePartidaUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.GetPartidasUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.InsertPartidaUseCase
-import edu.ucne.registrojugadoresmv.presentation.partida.PartidaEvent.PartidaEvent
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaUiState.PartidaUiState
+import edu.ucne.registrojugadoresmv.presentation.partida.PartidaViewModel
+import edu.ucne.registrojugadoresmv.presentation.partida.PartidaViewModelFactory
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEvent
 import java.text.SimpleDateFormat
 import java.util.*
 

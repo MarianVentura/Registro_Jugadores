@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.partida
+package edu.ucne.registrojugadoresmv.presentation.partida.partidaUiState
 
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.model.Jugador

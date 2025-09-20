@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.domain.usecase
+package edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases
 
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.repository.PartidaRepository

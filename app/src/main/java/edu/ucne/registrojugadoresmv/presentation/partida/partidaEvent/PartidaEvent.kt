@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.partida.PartidaEvent
+package edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent
 
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 

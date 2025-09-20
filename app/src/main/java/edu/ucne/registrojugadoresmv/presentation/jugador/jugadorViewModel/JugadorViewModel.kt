@@ -7,7 +7,7 @@ import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.usecase.GetJugadoresUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.InsertJugadorUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.ValidateJugadorUseCase
-import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent
+import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent
 import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorUiState.JugadorUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

@@ -1,8 +1,8 @@
 package edu.ucne.registrojugadoresmv.data.repository
 
 import edu.ucne.registrojugadoresmv.data.local.dao.PartidaDao
-import edu.ucne.registrojugadoresmv.data.mapper.toDomain
-import edu.ucne.registrojugadoresmv.data.mapper.toEntity
+import edu.ucne.registrojugadoresmv.data.mappers.toDomain
+import edu.ucne.registrojugadoresmv.data.mappers.toEntity
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.repository.PartidaRepository
 import kotlinx.coroutines.flow.Flow

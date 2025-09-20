@@ -270,7 +270,7 @@ fun RegistrationForm(
             // Name field
             OutlinedTextField(
                 value = state.nombres,
-                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.NombresChanged(it)) },
+                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.NombresChanged(it)) },
                 label = { Text("Nombre completo") },
                 leadingIcon = {
                     Icon(
@@ -295,7 +295,7 @@ fun RegistrationForm(
             // Games field
             OutlinedTextField(
                 value = state.partidas,
-                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.PartidasChanged(it)) },
+                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.PartidasChanged(it)) },
                 label = { Text("Número de partidas") },
                 leadingIcon = {
                     Icon(
@@ -323,7 +323,7 @@ fun RegistrationForm(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.SaveJugador) },
+                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.SaveJugador) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -355,7 +355,7 @@ fun RegistrationForm(
                 }
 
                 OutlinedButton(
-                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.JugadorEvent.ClearForm) },
+                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.ClearForm) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),

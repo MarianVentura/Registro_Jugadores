@@ -6,7 +6,8 @@ import androidx.lifecycle.viewModelScope
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.usecase.*
 import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.DeletePartidaUseCase
-import edu.ucne.registrojugadoresmv.presentation.partida.PartidaEvent.PartidaEvent
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaUiState.PartidaUiState
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEvent
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Date

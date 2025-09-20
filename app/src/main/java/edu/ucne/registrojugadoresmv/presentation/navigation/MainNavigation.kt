@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import edu.ucne.registrojugadoresmv.presentation.home.HomeScreen
 import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorScreen.JugadorScreen
-import edu.ucne.registrojugadoresmv.presentation.partida.PartidaScreen
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaScreen.PartidaScreen
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")

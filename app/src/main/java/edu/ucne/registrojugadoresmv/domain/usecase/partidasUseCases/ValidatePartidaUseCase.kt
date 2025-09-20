@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.domain.usecase
+package edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases
 
 data class ValidacionesPartidas(
     val isValid: Boolean,

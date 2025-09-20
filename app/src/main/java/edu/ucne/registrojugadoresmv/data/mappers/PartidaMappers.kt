@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.data.mapper
+package edu.ucne.registrojugadoresmv.data.mappers
 
 import edu.ucne.registrojugadoresmv.data.local.entities.PartidaEntity
 import edu.ucne.registrojugadoresmv.domain.model.Partida
