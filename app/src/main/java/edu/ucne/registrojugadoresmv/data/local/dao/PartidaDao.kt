@@ -1,55 +1,26 @@
 package edu.ucne.registrojugadoresmv.data.local.dao
 
-import androidx.room.*
-import edu.ucne.registrojugadoresmv.data.local.entities.Partida
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Query
+import androidx.room.Upsert
+import edu.ucne.registrojugadoresmv.data.local.entities.PartidaEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PartidaDao {
-    @Insert
-    suspend fun insert(partida: Partida): Long
-
-    @Update
-    suspend fun update(partida: Partida)
-
-    @Delete
-    suspend fun delete(partida: Partida)
-
-    @Query("SELECT * FROM Partidas ORDER BY fecha DESC")
-    fun getAll(): Flow<List<Partida>>
+    @Query("SELECT * FROM Partidas ORDER BY partidaId DESC")
+    fun getAll(): Flow<List<PartidaEntity>>
 
     @Query("SELECT * FROM Partidas WHERE partidaId = :id")
-    suspend fun getById(id: Int): Partida?
+    suspend fun find(id: Int): PartidaEntity?
 
-    @Query("""
-        SELECT p.*, 
-               j1.nombres as jugador1Nombre, 
-               j2.nombres as jugador2Nombre,
-               g.nombres as ganadorNombre
-        FROM Partidas p
-        INNER JOIN Jugadores j1 ON p.jugador1Id = j1.jugadorId
-        INNER JOIN Jugadores j2 ON p.jugador2Id = j2.jugadorId
-        LEFT JOIN Jugadores g ON p.ganadorId = g.jugadorId
-        ORDER BY p.fecha DESC
-    """)
-    fun getPartidasConNombres(): Flow<List<PartidaConNombresDto>>
+    @Upsert
+    suspend fun save(partida: PartidaEntity)
 
-    @Query("SELECT COUNT(*) FROM Partidas WHERE (jugador1Id = :jugadorId OR jugador2Id = :jugadorId) AND esFinalizada = 1")
-    suspend fun getPartidasFinalizadasPorJugador(jugadorId: Int): Int
+    @Delete
+    suspend fun delete(partida: PartidaEntity)
 
-    @Query("SELECT COUNT(*) FROM Partidas WHERE ganadorId = :jugadorId")
-    suspend fun getVictoriasPorJugador(jugadorId: Int): Int
+    @Query("DELETE FROM Partidas WHERE partidaId = :id")
+    suspend fun deleteById(id: Int)
 }
-
-// DTO para la consulta con nombres
-data class PartidaConNombresDto(
-    val partidaId: Int,
-    val fecha: String,
-    val jugador1Id: Int,
-    val jugador2Id: Int,
-    val ganadorId: Int?,
-    val esFinalizada: Boolean,
-    val jugador1Nombre: String,
-    val jugador2Nombre: String,
-    val ganadorNombre: String?
-)
