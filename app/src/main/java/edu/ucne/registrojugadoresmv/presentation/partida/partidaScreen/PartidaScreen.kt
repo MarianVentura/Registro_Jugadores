@@ -1,5 +1,6 @@
 package edu.ucne.registrojugadoresmv.presentation.partida.partidaScreen
 
+
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -28,14 +29,16 @@ import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.usecase.*
 import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.DeletePartidaUseCase
-import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.GetPartidasUseCase
-import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.InsertPartidaUseCase
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.ObservePartidaUseCase
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.UpsertPartidaUseCase
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.GetPartidaUseCase
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaUiState.PartidaUiState
-import edu.ucne.registrojugadoresmv.presentation.partida.PartidaViewModel
-import edu.ucne.registrojugadoresmv.presentation.partida.PartidaViewModelFactory
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaViewModel.PartidaViewModel
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaViewModel.PartidaViewModelFactory
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEvent
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.foundation.lazy.items as items
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,8 +49,9 @@ fun PartidaScreen() {
     val jugadorRepository = remember { JugadorRepositoryImpl(database.jugadorDao()) }
     val viewModel: PartidaViewModel = viewModel(
         factory = PartidaViewModelFactory(
-            GetPartidasUseCase(partidaRepository),
-            InsertPartidaUseCase(partidaRepository),
+            ObservePartidaUseCase(partidaRepository),
+            GetPartidaUseCase(partidaRepository),
+            UpsertPartidaUseCase(partidaRepository),
             DeletePartidaUseCase(partidaRepository),
             GetJugadoresUseCase(jugadorRepository)
         )
@@ -128,7 +132,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Trophy,
+                        imageVector = Icons.Default.EmojiEvents,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = Color(0xFF6200EE)
@@ -280,6 +284,7 @@ fun MainPartidaScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PartidaForm(
     state: PartidaUiState,
@@ -402,7 +407,7 @@ fun PartidaForm(
                     label = { Text("Resultado") },
                     leadingIcon = {
                         Icon(
-                            imageVector = Icons.Default.Trophy,
+                            imageVector = Icons.Default.EmojiEvents,
                             contentDescription = null,
                             tint = Color(0xFF6200EE)
                         )
