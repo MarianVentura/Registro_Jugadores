@@ -4,7 +4,6 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,8 +27,10 @@ import edu.ucne.registrojugadoresmv.data.repository.JugadorRepositoryImpl
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.usecase.*
-import edu.ucne.registrojugadoresmv.presentation.partida.PartidaViewModel.PartidaViewModel
-import edu.ucne.registrojugadoresmv.presentation.partida.PartidaViewModel.PartidaViewModelFactory
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.DeletePartidaUseCase
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.GetPartidasUseCase
+import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.InsertPartidaUseCase
+import edu.ucne.registrojugadoresmv.presentation.partida.PartidaEvent.PartidaEvent
 import java.text.SimpleDateFormat
 import java.util.*
 
