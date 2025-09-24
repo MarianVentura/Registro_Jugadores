@@ -17,5 +17,11 @@ sealed class Screen {
     data class PartidaForm(val partidaId: Int = 0) : Screen()
 
     @Serializable
+    data object LogroList : Screen()  // ← NUEVA PANTALLA AGREGADA
+
+    @Serializable
+    data class LogroForm(val logroId: Int = 0) : Screen()  // ← NUEVA PANTALLA AGREGADA
+
+    @Serializable
     data object Home : Screen()
 }
