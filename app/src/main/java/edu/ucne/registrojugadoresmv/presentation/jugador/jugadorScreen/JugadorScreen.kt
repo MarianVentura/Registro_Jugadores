@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
@@ -347,7 +348,6 @@ fun RegistrationForm(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Cambiado de Save a Check
                             Icon(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null
@@ -427,7 +427,6 @@ fun RegistrationForm(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = null,
@@ -509,7 +508,6 @@ fun ImprovedJugadorItem(
                 )
             }
 
-
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -564,7 +562,6 @@ fun EmptyPlayersCard() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = null,
@@ -587,5 +584,40 @@ fun EmptyPlayersCard() {
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+
+@Preview(showSystemUi = true)
+@Composable
+fun JugadorWelcomeScreenPreview() {
+    MaterialTheme {
+        WelcomeScreen(
+            onStartRegistration = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EmptyPlayersCardPreview() {
+    MaterialTheme {
+        EmptyPlayersCard()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ImprovedJugadorItemPreview() {
+    MaterialTheme {
+        ImprovedJugadorItem(
+            jugador = Jugador(
+                jugadorId = 1,
+                nombres = "Juan Pérez",
+                partidas = 15
+            ),
+            onEdit = {},
+            onDelete = {}
+        )
     }
 }

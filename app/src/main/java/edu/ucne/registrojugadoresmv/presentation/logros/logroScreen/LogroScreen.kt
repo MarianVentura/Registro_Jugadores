@@ -24,6 +24,7 @@ import edu.ucne.registrojugadoresmv.domain.model.Logro
 import edu.ucne.registrojugadoresmv.presentation.logro.logroUiState.LogroUiState
 import edu.ucne.registrojugadoresmv.presentation.logros.logroViewModel.LogroViewModel
 import edu.ucne.registrojugadoresmv.presentation.logro.logroEvent.LogroEvent
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -598,5 +599,39 @@ fun EmptyLogrosCard() {
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+fun LogroWelcomeScreenPreview() {
+    MaterialTheme {
+        WelcomeScreen(
+            onStartRegistration = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun EmptyLogrosCardPreview() {
+    MaterialTheme {
+        EmptyLogrosCard()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun LogroItemPreview() {
+    MaterialTheme {
+        LogroItem(
+            logro = edu.ucne.registrojugadoresmv.domain.model.Logro(
+                logroId = 1,
+                nombre = "Primera Victoria",
+                descripcion = "Gana tu primera partida del torneo de Tic-Tac-Toe y demuestra que tienes lo necesario para ser el campeón."
+            ),
+            onEdit = {},
+            onDelete = {}
+        )
     }
 }
