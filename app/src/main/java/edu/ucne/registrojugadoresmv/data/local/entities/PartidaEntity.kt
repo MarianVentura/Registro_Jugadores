@@ -2,8 +2,8 @@ package edu.ucne.registrojugadoresmv.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
-import java.util.Date
 
 @Entity(
     tableName = "Partidas",
@@ -26,6 +26,11 @@ import java.util.Date
             childColumns = ["ganadorId"],
             onDelete = ForeignKey.RESTRICT
         )
+    ],
+    indices = [
+        Index(value = ["jugador1Id"]),
+        Index(value = ["jugador2Id"]),
+        Index(value = ["ganadorId"])
     ]
 )
 data class PartidaEntity(

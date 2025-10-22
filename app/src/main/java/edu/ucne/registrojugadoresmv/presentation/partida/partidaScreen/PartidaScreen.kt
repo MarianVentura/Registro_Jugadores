@@ -39,6 +39,7 @@ import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEve
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.foundation.lazy.items as items
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -793,5 +794,28 @@ fun EmptyPartidasCard() {
                 textAlign = TextAlign.Center
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PartidaItemPreview() {
+    MaterialTheme {
+        PartidaItem(
+            partida = edu.ucne.registrojugadoresmv.domain.model.Partida(
+                partidaId = 1,
+                fecha = "2024-01-15 14:30:00",
+                jugador1Id = 1,
+                jugador2Id = 2,
+                ganadorId = 1,
+                esFinalizada = true
+            ),
+            jugadores = listOf(
+                edu.ucne.registrojugadoresmv.domain.model.Jugador(1, "Juan Pérez", 10),
+                edu.ucne.registrojugadoresmv.domain.model.Jugador(2, "María García", 8)
+            ),
+            onEdit = {},
+            onDelete = {}
+        )
     }
 }

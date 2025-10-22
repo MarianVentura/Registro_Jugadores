@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador.jugadorScreen
+package edu.ucne.registrojugadoresmv.presentation.logros.logroScreen
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -18,16 +18,17 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import edu.ucne.registrojugadoresmv.domain.model.Jugador
-import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorUiState.JugadorUiState
-import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorViewModel.JugadorViewModel
+import edu.ucne.registrojugadoresmv.domain.model.Logro
+import edu.ucne.registrojugadoresmv.presentation.logro.logroUiState.LogroUiState
+import edu.ucne.registrojugadoresmv.presentation.logros.logroViewModel.LogroViewModel
+import edu.ucne.registrojugadoresmv.presentation.logro.logroEvent.LogroEvent
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun JugadorScreen(viewModel: JugadorViewModel) {
+fun LogroScreen(viewModel: LogroViewModel) {
     val state by viewModel.uiState.collectAsState()
 
     var showWelcome by remember { mutableStateOf(true) }
@@ -47,7 +48,7 @@ fun JugadorScreen(viewModel: JugadorViewModel) {
         enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
         exit = fadeOut() + slideOutVertically(targetOffsetY = { -it })
     ) {
-        MainRegistrationScreen(
+        MainLogroScreen(
             state = state,
             viewModel = viewModel,
             onBackToWelcome = { showWelcome = true }
@@ -103,7 +104,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.PlayArrow,
+                        imageVector = Icons.Default.EmojiEvents,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
                         tint = Color(0xFF6200EE)
@@ -111,7 +112,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                 }
 
                 Text(
-                    text = "Tic-Tac-Toe",
+                    text = "Logros",
                     style = MaterialTheme.typography.headlineLarge.copy(
                         fontWeight = FontWeight.Bold,
                         fontSize = 32.sp
@@ -120,7 +121,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                 )
 
                 Text(
-                    text = "Sistema de Registro de Jugadores",
+                    text = "Sistema de Registro de Logros",
                     style = MaterialTheme.typography.titleMedium,
                     color = Color(0xFF666666),
                     textAlign = TextAlign.Center
@@ -129,7 +130,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Registra a todos los jugadores que participarán en el torneo de Tic-Tac-Toe. Lleva un control completo de las partidas jugadas por cada participante.",
+                    text = "Registra y administra todos los logros del juego Tic-Tac-Toe. Crea metas y objetivos que los jugadores pueden alcanzar durante sus partidas.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color(0xFF444444),
                     textAlign = TextAlign.Center,
@@ -160,7 +161,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                             contentDescription = null
                         )
                         Text(
-                            text = "Comenzar Registro",
+                            text = "Gestionar Logros",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -173,9 +174,9 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainRegistrationScreen(
-    state: JugadorUiState,
-    viewModel: JugadorViewModel,
+fun MainLogroScreen(
+    state: LogroUiState,
+    viewModel: LogroViewModel,
     onBackToWelcome: () -> Unit
 ) {
     Scaffold(
@@ -183,7 +184,7 @@ fun MainRegistrationScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Registro de Jugadores",
+                        text = "Registro de Logros",
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -212,7 +213,7 @@ fun MainRegistrationScreen(
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             item {
-                RegistrationForm(
+                LogroForm(
                     state = state,
                     viewModel = viewModel
                 )
@@ -220,7 +221,7 @@ fun MainRegistrationScreen(
 
             item {
                 Text(
-                    text = "Jugadores Registrados (${state.jugadores.size})",
+                    text = "Logros Registrados (${state.logros.size})",
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold
                     ),
@@ -228,14 +229,14 @@ fun MainRegistrationScreen(
                 )
             }
 
-            if (state.jugadores.isEmpty()) {
-                item { EmptyPlayersCard() }
+            if (state.logros.isEmpty()) {
+                item { EmptyLogrosCard() }
             } else {
-                items(state.jugadores) { jugador ->
-                    ImprovedJugadorItem(
-                        jugador = jugador,
-                        onEdit = { /* TODO */ },
-                        onDelete = { /* TODO */ }
+                items(state.logros) { logro ->
+                    LogroItem(
+                        logro = logro,
+                        onEdit = { viewModel.onEvent(LogroEvent.EditLogro(logro)) },
+                        onDelete = { viewModel.onEvent(LogroEvent.DeleteLogro(logro.logroId)) }
                     )
                 }
             }
@@ -244,9 +245,9 @@ fun MainRegistrationScreen(
 }
 
 @Composable
-fun RegistrationForm(
-    state: JugadorUiState,
-    viewModel: JugadorViewModel
+fun LogroForm(
+    state: LogroUiState,
+    viewModel: LogroViewModel
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -261,45 +262,18 @@ fun RegistrationForm(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Nuevo Jugador",
+                text = if (state.isEditing) "Editar Logro" else "Nuevo Logro",
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
                 color = Color(0xFF6200EE)
             )
 
-            // Name field
+            // Campo Nombre
             OutlinedTextField(
-                value = state.nombres,
-                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.NombresChanged(it)
-                ) },
-                label = { Text("Nombre completo") },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = Color(0xFF6200EE)
-                    )
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                isError = state.nombresError != null,
-                supportingText = {
-                    state.nombresError?.let {
-                        Text(
-                            text = it,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
-            )
-
-            // Games field
-            OutlinedTextField(
-                value = state.partidas,
-                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.PartidasChanged(it)
-                ) },
-                label = { Text("Número de partidas") },
+                value = state.nombre,
+                onValueChange = { viewModel.onEvent(LogroEvent.NombreChanged(it)) },
+                label = { Text("Nombre del logro") },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Star,
@@ -309,9 +283,9 @@ fun RegistrationForm(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                isError = state.partidasError != null,
+                isError = state.nombreError != null,
                 supportingText = {
-                    state.partidasError?.let {
+                    state.nombreError?.let {
                         Text(
                             text = it,
                             color = MaterialTheme.colorScheme.error
@@ -320,14 +294,40 @@ fun RegistrationForm(
                 }
             )
 
-            // Bottoms
+            // Campo Descripción
+            OutlinedTextField(
+                value = state.descripcion,
+                onValueChange = { viewModel.onEvent(LogroEvent.DescripcionChanged(it)) },
+                label = { Text("Descripción del logro") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Description,
+                        contentDescription = null,
+                        tint = Color(0xFF6200EE)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                minLines = 3,
+                maxLines = 5,
+                isError = state.descripcionError != null,
+                supportingText = {
+                    state.descripcionError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            )
+
+            // Botones
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.SaveJugador)
-                    },
+                    onClick = { viewModel.onEvent(LogroEvent.SaveLogro) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -352,13 +352,13 @@ fun RegistrationForm(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null
                             )
-                            Text("Guardar")
+                            Text(if (state.isEditing) "Actualizar" else "Guardar")
                         }
                     }
                 }
 
                 OutlinedButton(
-                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.ClearForm) },
+                    onClick = { viewModel.onEvent(LogroEvent.ClearForm) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -377,7 +377,7 @@ fun RegistrationForm(
                 }
             }
 
-            // Messages
+            // Mensajes
             AnimatedVisibility(
                 visible = state.successMessage != null,
                 enter = slideInVertically() + fadeIn(),
@@ -446,8 +446,8 @@ fun RegistrationForm(
 }
 
 @Composable
-fun ImprovedJugadorItem(
-    jugador: Jugador,
+fun LogroItem(
+    logro: Logro,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -459,94 +459,109 @@ fun ImprovedJugadorItem(
             containerColor = Color.White
         )
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            // Avatar circular
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(
-                        brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0xFF6200EE).copy(alpha = 0.8f),
-                                Color(0xFF3700B3)
-                            )
-                        ),
-                        shape = CircleShape
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = jugador.nombres.take(2).uppercase(),
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-            }
-
-            // Player Information
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 16.dp)
-            ) {
-                Text(
-                    text = jugador.nombres,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = Color(0xFF2C2C2C)
-                )
-                Text(
-                    text = "ID: ${jugador.jugadorId} • Partidas: ${jugador.partidas}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF666666)
-                )
-            }
-
             Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = onEdit,
+                // Icono de logro
+                Box(
                     modifier = Modifier
+                        .size(56.dp)
                         .background(
-                            color = Color(0xFF2196F3).copy(alpha = 0.1f),
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    Color(0xFF6200EE).copy(alpha = 0.8f),
+                                    Color(0xFF3700B3)
+                                )
+                            ),
                             shape = CircleShape
-                        )
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar",
-                        tint = Color(0xFF2196F3)
+                        imageVector = Icons.Default.EmojiEvents,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
                     )
                 }
 
-                IconButton(
-                    onClick = onDelete,
+                // Información del logro
+                Column(
                     modifier = Modifier
-                        .background(
-                            color = Color(0xFFF44336).copy(alpha = 0.1f),
-                            shape = CircleShape
-                        )
+                        .weight(1f)
+                        .padding(horizontal = 16.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar",
-                        tint = Color(0xFFF44336)
+                    Text(
+                        text = logro.nombre,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        color = Color(0xFF2C2C2C)
+                    )
+                    Text(
+                        text = "ID: ${logro.logroId}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF666666)
                     )
                 }
+
+                // Botones de acción
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    IconButton(
+                        onClick = onEdit,
+                        modifier = Modifier
+                            .background(
+                                color = Color(0xFF2196F3).copy(alpha = 0.1f),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar",
+                            tint = Color(0xFF2196F3)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier
+                            .background(
+                                color = Color(0xFFF44336).copy(alpha = 0.1f),
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Eliminar",
+                            tint = Color(0xFFF44336)
+                        )
+                    }
+                }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Descripción
+            Text(
+                text = logro.descripcion,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF444444),
+                lineHeight = 20.sp
+            )
         }
     }
 }
 
 @Composable
-fun EmptyPlayersCard() {
+fun EmptyLogrosCard() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -563,14 +578,14 @@ fun EmptyPlayersCard() {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.Person,
+                imageVector = Icons.Default.EmojiEvents,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = Color(0xFF9E9E9E)
             )
 
             Text(
-                text = "No hay jugadores registrados",
+                text = "No hay logros registrados",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
@@ -578,7 +593,7 @@ fun EmptyPlayersCard() {
             )
 
             Text(
-                text = "Completa el formulario de arriba para agregar tu primer jugador",
+                text = "Completa el formulario de arriba para agregar tu primer logro",
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color(0xFF9E9E9E),
                 textAlign = TextAlign.Center
@@ -587,10 +602,9 @@ fun EmptyPlayersCard() {
     }
 }
 
-
 @Preview(showSystemUi = true)
 @Composable
-fun JugadorWelcomeScreenPreview() {
+fun LogroWelcomeScreenPreview() {
     MaterialTheme {
         WelcomeScreen(
             onStartRegistration = {}
@@ -600,21 +614,21 @@ fun JugadorWelcomeScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun EmptyPlayersCardPreview() {
+fun EmptyLogrosCardPreview() {
     MaterialTheme {
-        EmptyPlayersCard()
+        EmptyLogrosCard()
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun ImprovedJugadorItemPreview() {
+fun LogroItemPreview() {
     MaterialTheme {
-        ImprovedJugadorItem(
-            jugador = Jugador(
-                jugadorId = 1,
-                nombres = "Juan Pérez",
-                partidas = 15
+        LogroItem(
+            logro = edu.ucne.registrojugadoresmv.domain.model.Logro(
+                logroId = 1,
+                nombre = "Primera Victoria",
+                descripcion = "Gana tu primera partida del torneo de Tic-Tac-Toe y demuestra que tienes lo necesario para ser el campeón."
             ),
             onEdit = {},
             onDelete = {}

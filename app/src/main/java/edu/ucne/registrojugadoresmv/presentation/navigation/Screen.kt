@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed class Screen {
     @Serializable
+    data object Home : Screen()
+
+    @Serializable
     data object JugadorList : Screen()
 
     @Serializable
@@ -14,8 +17,19 @@ sealed class Screen {
     data object PartidaList : Screen()
 
     @Serializable
-    data class PartidaForm(val partidaId: Int = 0) : Screen()
+    data object PartidaForm : Screen()
 
     @Serializable
-    data object Home : Screen()
+    data class TicTacToeGame(
+        val jugador1Id: Int,
+        val jugador2Id: Int,
+        val jugador1Nombre: String = "",
+        val jugador2Nombre: String = ""
+    ) : Screen()
+
+    @Serializable
+    data object LogroList : Screen()
+
+    @Serializable
+    data class LogroForm(val logroId: Int = 0) : Screen()
 }

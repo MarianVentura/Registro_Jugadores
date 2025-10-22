@@ -8,8 +8,10 @@ import androidx.room.TypeConverters
 import android.content.Context
 import edu.ucne.registrojugadoresmv.data.local.dao.JugadorDao
 import edu.ucne.registrojugadoresmv.data.local.dao.PartidaDao
+import edu.ucne.registrojugadoresmv.data.local.dao.LogroDao
 import edu.ucne.registrojugadoresmv.data.local.entities.JugadorEntity
 import edu.ucne.registrojugadoresmv.data.local.entities.PartidaEntity
+import edu.ucne.registrojugadoresmv.data.local.entities.LogroEntity
 import java.util.Date
 
 class Converters {
@@ -27,15 +29,17 @@ class Converters {
 @Database(
     entities = [
         JugadorEntity::class,
-        PartidaEntity::class
+        PartidaEntity::class,
+        LogroEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun jugadorDao(): JugadorDao
     abstract fun partidaDao(): PartidaDao
+    abstract fun logroDao(): LogroDao
 
     companion object {
         @Volatile

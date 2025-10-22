@@ -2,13 +2,13 @@ package edu.ucne.registrojugadoresmv.domain.usecase
 
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.repository.JugadorRepository
+import javax.inject.Inject
 
-class InsertJugadorUseCase(
+class InsertJugadorUseCase @Inject constructor(
     private val repository: JugadorRepository
 ) {
     suspend operator fun invoke(jugador: Jugador): Result<Long> {
         return try {
-            // Validaciones
             if (jugador.nombres.isBlank()) {
                 return Result.failure(Exception("El nombre es obligatorio"))
             }

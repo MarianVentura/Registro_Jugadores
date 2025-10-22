@@ -7,7 +7,7 @@ class DeletePartidaUseCase @Inject constructor(
     private val repository: PartidaRepository
 ) {
     suspend operator fun invoke(partidaId: Int) {
-        repository.deletePartidaById(partidaId)
+        repository.deleteById(partidaId)
     }
 }
 

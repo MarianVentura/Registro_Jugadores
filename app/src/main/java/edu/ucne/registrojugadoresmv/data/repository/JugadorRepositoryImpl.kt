@@ -7,8 +7,9 @@ import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.repository.JugadorRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class JugadorRepositoryImpl(
+class JugadorRepositoryImpl @Inject constructor(
     private val jugadorDao: JugadorDao
 ) : JugadorRepository {
 

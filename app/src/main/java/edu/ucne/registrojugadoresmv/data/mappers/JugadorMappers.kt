@@ -1,6 +1,6 @@
 package edu.ucne.registrojugadoresmv.data.mappers
 
-import edu.ucne.registrojugadoresmv.data.local.entities.Jugador as JugadorEntity
+import edu.ucne.registrojugadoresmv.data.local.entities.JugadorEntity as JugadorEntity
 import edu.ucne.registrojugadoresmv.domain.model.Jugador as JugadorDomain
 
 fun JugadorEntity.toDomain(): JugadorDomain {

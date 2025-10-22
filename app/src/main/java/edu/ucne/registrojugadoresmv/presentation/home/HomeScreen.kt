@@ -15,13 +15,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
 fun HomeScreen(
     onNavigateToJugadores: () -> Unit,
-    onNavigateToPartidas: () -> Unit
+    onNavigateToPartidas: () -> Unit,
+    onNavigateToLogros: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -74,7 +76,7 @@ fun HomeScreen(
 
                 // Descripción
                 Text(
-                    text = "Administra jugadores y partidas de tu torneo de Tic-Tac-Toe de manera profesional.",
+                    text = "Administra jugadores, partidas y logros de tu torneo de Tic-Tac-Toe de manera profesional.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color(0xFF444444),
                     textAlign = TextAlign.Center,
@@ -169,6 +171,48 @@ fun HomeScreen(
                             }
                         }
                     }
+
+                    // Botón Registro de Logros
+                    Button(
+                        onClick = onNavigateToLogros,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFFF9800)
+                        ),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 8.dp
+                        )
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EmojiEvents,
+                                contentDescription = null,
+                                modifier = Modifier.size(32.dp),
+                                tint = Color.Black
+                            )
+                            Column(
+                                horizontalAlignment = Alignment.Start
+                            ) {
+                                Text(
+                                    text = "Registro de Logros",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    text = "Gestionar objetivos y metas",
+                                    fontSize = 14.sp,
+                                    color = Color.Black.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -199,5 +243,17 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+fun HomeScreenPreview() {
+    MaterialTheme {
+        HomeScreen(
+            onNavigateToJugadores = {},
+            onNavigateToPartidas = {},
+            onNavigateToLogros = {}
+        )
     }
 }
