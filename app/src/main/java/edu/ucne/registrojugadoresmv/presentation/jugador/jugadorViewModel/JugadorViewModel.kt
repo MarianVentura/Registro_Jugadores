@@ -1,8 +1,8 @@
 package edu.ucne.registrojugadoresmv.presentation.jugador.jugadorViewModel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.usecase.GetJugadoresUseCase
 import edu.ucne.registrojugadoresmv.domain.usecase.InsertJugadorUseCase
@@ -17,8 +17,10 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class JugadorViewModel(
+@HiltViewModel
+class JugadorViewModel @Inject constructor(
     private val getJugadoresUseCase: GetJugadoresUseCase,
     private val insertJugadorUseCase: InsertJugadorUseCase,
     private val validateJugadorUseCase: ValidateJugadorUseCase
@@ -83,10 +85,6 @@ class JugadorViewModel(
         }
     }
 
-    /**
-     * Método thread-safe para actualizar el estado usando update()
-     * en lugar de asignación directa para evitar problemas de concurrencia
-     */
     private fun updateUiState(update: (JugadorUiState) -> JugadorUiState) {
         _uiState.update(update)
     }
@@ -95,7 +93,6 @@ class JugadorViewModel(
         viewModelScope.launch {
             val currentState = _uiState.value
 
-            // Validaciones mejoradas
             val nombresError = validateJugadorUseCase.validateNombre(currentState.nombres)
             val partidasError = validatePartidasImproved(currentState.partidas)
 
@@ -138,9 +135,6 @@ class JugadorViewModel(
         }
     }
 
-    /**
-     * Validación mejorada de partidas que verifica que sea un entero no negativo
-     */
     private fun validatePartidasImproved(partidas: String): String? {
         return when {
             partidas.isBlank() -> "Las partidas son obligatorias"
@@ -151,9 +145,6 @@ class JugadorViewModel(
         }
     }
 
-    /**
-     * Obtener jugadores con manejo de errores mejorado
-     */
     private fun getJugadores() {
         getJugadoresUseCase()
             .onEach { jugadores ->
@@ -176,9 +167,6 @@ class JugadorViewModel(
             .launchIn(viewModelScope)
     }
 
-    /**
-     * Función para eliminar un jugador (implementación básica)
-     */
     private fun deleteJugador(jugadorId: Int) {
         viewModelScope.launch {
             try {
@@ -186,8 +174,6 @@ class JugadorViewModel(
 
                 val jugador = _uiState.value.jugadores.find { it.jugadorId == jugadorId }
                 if (jugador != null) {
-                    // Aquí necesitarías un DeleteJugadorUseCase
-                    // Por ahora, simularemos removiéndolo de la lista local
                     updateUiState { state ->
                         state.copy(
                             jugadores = state.jugadores.filter { it.jugadorId != jugadorId },
@@ -214,9 +200,6 @@ class JugadorViewModel(
         }
     }
 
-    /**
-     * Función para seleccionar un jugador para edición
-     */
     private fun selectJugador(jugadorId: Int) {
         val jugador = _uiState.value.jugadores.find { it.jugadorId == jugadorId }
         if (jugador != null) {
@@ -234,9 +217,6 @@ class JugadorViewModel(
         }
     }
 
-    /**
-     * Función para editar un jugador
-     */
     private fun editJugador(jugador: Jugador) {
         updateUiState { state ->
             state.copy(
@@ -251,28 +231,7 @@ class JugadorViewModel(
         }
     }
 
-    /**
-     * Confirmar eliminación de jugador
-     */
     private fun confirmDeleteJugador(jugador: Jugador) {
         deleteJugador(jugador.jugadorId)
-    }
-}
-
-class JugadorViewModelFactory(
-    private val getJugadoresUseCase: GetJugadoresUseCase,
-    private val insertJugadorUseCase: InsertJugadorUseCase,
-    private val validateJugadorUseCase: ValidateJugadorUseCase
-) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(JugadorViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return JugadorViewModel(
-                getJugadoresUseCase,
-                insertJugadorUseCase,
-                validateJugadorUseCase
-            ) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

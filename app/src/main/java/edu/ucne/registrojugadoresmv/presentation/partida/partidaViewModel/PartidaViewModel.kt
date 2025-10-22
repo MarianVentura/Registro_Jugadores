@@ -3,6 +3,7 @@ package edu.ucne.registrojugadoresmv.presentation.partida.partidaViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.usecase.*
 import edu.ucne.registrojugadoresmv.domain.usecase.partidasUseCases.DeletePartidaUseCase
@@ -16,8 +17,10 @@ import kotlinx.coroutines.launch
 import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.Locale
+import javax.inject.Inject
 
-class PartidaViewModel(
+@HiltViewModel
+class PartidaViewModel @Inject constructor(
     private val observePartidaUseCase: ObservePartidaUseCase,
     private val getPartidaUseCase: GetPartidaUseCase,
     private val upsertPartidaUseCase: UpsertPartidaUseCase,
@@ -77,7 +80,7 @@ class PartidaViewModel(
 
     private fun loadPartidas() {
         viewModelScope.launch {
-            observePartidaUseCase().collect { partidas ->  // ✅
+            observePartidaUseCase().collect { partidas ->
                 _uiState.value = _uiState.value.copy(partidas = partidas)
             }
         }
@@ -95,7 +98,6 @@ class PartidaViewModel(
         viewModelScope.launch {
             val state = _uiState.value
 
-            // Validaciones básicas
             if (state.jugador1Id == null || state.jugador1Id <= 0) {
                 _uiState.value = state.copy(jugador1Error = "Debe seleccionar el jugador 1")
                 return@launch
@@ -169,6 +171,7 @@ class PartidaViewModel(
             }
         }
     }
+
     private fun deletePartida(partidaId: Int) {
         viewModelScope.launch {
             try {

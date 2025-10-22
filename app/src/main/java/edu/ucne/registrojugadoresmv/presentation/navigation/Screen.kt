@@ -22,7 +22,9 @@ sealed class Screen {
     @Serializable
     data class TicTacToeGame(
         val jugador1Id: Int,
-        val jugador2Id: Int
+        val jugador2Id: Int,
+        val jugador1Nombre: String = "",
+        val jugador2Nombre: String = ""
     ) : Screen()
 
     @Serializable

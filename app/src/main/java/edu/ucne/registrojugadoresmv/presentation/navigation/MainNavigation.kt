@@ -1,7 +1,7 @@
 package edu.ucne.registrojugadoresmv.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +13,7 @@ import edu.ucne.registrojugadoresmv.presentation.partida.partidaScreen.PartidaFo
 import edu.ucne.registrojugadoresmv.presentation.game.TicTacToeGameScreen
 import edu.ucne.registrojugadoresmv.presentation.logros.logroScreen.LogroScreen
 import edu.ucne.registrojugadoresmv.presentation.logros.logroViewModel.LogroViewModel
+import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorViewModel.JugadorViewModel
 
 
 @Composable
@@ -21,7 +22,6 @@ fun MainNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = Screen.Home
     ) {
-        // Home
         composable<Screen.Home> {
             HomeScreen(
                 onNavigateToJugadores = {
@@ -36,13 +36,11 @@ fun MainNavigation(navController: NavHostController) {
             )
         }
 
-        // Jugadores
         composable<Screen.JugadorList> {
-            val viewModel: edu.ucne.registrojugadoresmv.presentation.jugador.jugadorViewModel.JugadorViewModel = hiltViewModel()
+            val viewModel: JugadorViewModel = hiltViewModel()
             JugadorScreen(viewModel = viewModel)
         }
 
-        // Lista de Partidas
         composable<Screen.PartidaList> {
             PartidaListScreen(
                 onNavigateToCreatePartida = {
@@ -54,14 +52,15 @@ fun MainNavigation(navController: NavHostController) {
             )
         }
 
-        // Partidas - Crear
         composable<Screen.PartidaForm> {
             PartidaFormScreen(
-                onNavigateToGame = { jugador1Id, jugador2Id ->
+                onNavigateToGame = { jugador1Id, jugador2Id, jugador1Nombre, jugador2Nombre ->
                     navController.navigate(
                         Screen.TicTacToeGame(
                             jugador1Id = jugador1Id,
-                            jugador2Id = jugador2Id
+                            jugador2Id = jugador2Id,
+                            jugador1Nombre = jugador1Nombre,
+                            jugador2Nombre = jugador2Nombre
                         )
                     )
                 },
@@ -71,23 +70,21 @@ fun MainNavigation(navController: NavHostController) {
             )
         }
 
-        // Juego TicTacToe
         composable<Screen.TicTacToeGame> { backStackEntry ->
             val args = backStackEntry.toRoute<Screen.TicTacToeGame>()
 
             TicTacToeGameScreen(
                 jugador1Id = args.jugador1Id,
                 jugador2Id = args.jugador2Id,
-                onGameFinished = { ganadorId ->
-                    // viewModel.savePartida(jugador1Id, jugador2Id, ganadorId)
-                },
+                jugador1Nombre = args.jugador1Nombre,
+                jugador2Nombre = args.jugador2Nombre,
+                onGameFinished = { },
                 onNavigateBack = {
                     navController.popBackStack(Screen.PartidaList, inclusive = false)
                 }
             )
         }
 
-        // Logros
         composable<Screen.LogroList> {
             val viewModel = hiltViewModel<LogroViewModel>()
             LogroScreen(viewModel = viewModel)

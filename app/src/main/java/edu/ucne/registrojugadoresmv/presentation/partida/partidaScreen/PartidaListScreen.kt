@@ -21,8 +21,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import edu.ucne.registrojugadoresmv.domain.model.Partida
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaViewModel.PartidaViewModel
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,8 +43,8 @@ fun PartidaListScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver"
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Inicio"
                         )
                     }
                 },
@@ -97,9 +95,7 @@ fun PartidaListScreen(
                     PartidaItem(
                         partida = partida,
                         jugadores = state.jugadores,
-                        onDelete = {
-                            // viewModel.onEvent(PartidaEvent.DeletePartida(partida.partidaId ?: 0))
-                        }
+                        onDelete = { }
                     )
                 }
             }
@@ -116,8 +112,6 @@ fun PartidaItem(
     val jugador1 = jugadores.find { it.jugadorId == partida.jugador1Id }
     val jugador2 = jugadores.find { it.jugadorId == partida.jugador2Id }
     val ganador = jugadores.find { it.jugadorId == partida.ganadorId }
-
-    val dateFormatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -246,7 +240,7 @@ fun PartidaItem(
 }
 
 @Composable
-fun EmptyPartidasCard() {
+private fun EmptyPartidasCardList() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -287,8 +281,6 @@ fun EmptyPartidasCard() {
     }
 }
 
-// ==================== PREVIEW ====================
-
 @Preview(showSystemUi = true)
 @Composable
 fun PartidaListScreenPreview() {
@@ -302,8 +294,8 @@ fun PartidaListScreenPreview() {
 
 @Preview(showBackground = true)
 @Composable
-fun EmptyPartidasCardPreview() {
- MaterialTheme {
-      EmptyPartidasCard()
- }
+fun EmptyPartidasCardListPreview() {
+    MaterialTheme {
+        EmptyPartidasCardList()
+    }
 }

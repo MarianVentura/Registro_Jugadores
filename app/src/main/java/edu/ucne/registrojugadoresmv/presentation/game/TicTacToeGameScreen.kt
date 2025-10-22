@@ -17,6 +17,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaViewModel.PartidaViewModel
+import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEvent
+import java.text.SimpleDateFormat
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,21 +31,28 @@ fun TicTacToeGameScreen(
     jugador1Nombre: String = "Jugador 1",
     jugador2Nombre: String = "Jugador 2",
     onGameFinished: (ganadorId: Int?) -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    viewModel: PartidaViewModel = hiltViewModel()
 ) {
     var board by remember { mutableStateOf(List(9) { "" }) }
     var currentPlayer by remember { mutableStateOf("X") }
     var winner by remember { mutableStateOf<String?>(null) }
     var gameOver by remember { mutableStateOf(false) }
+    var partidaGuardada by remember { mutableStateOf(false) }
 
     val jugador1Symbol = "X"
     val jugador2Symbol = "O"
 
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(PartidaEvent.Jugador1Changed(jugador1Id))
+        viewModel.onEvent(PartidaEvent.Jugador2Changed(jugador2Id))
+    }
+
     fun checkWinner(): String? {
         val winPatterns = listOf(
-            listOf(0, 1, 2), listOf(3, 4, 5), listOf(6, 7, 8), // Rows
-            listOf(0, 3, 6), listOf(1, 4, 7), listOf(2, 5, 8), // Columns
-            listOf(0, 4, 8), listOf(2, 4, 6) // Diagonals
+            listOf(0, 1, 2), listOf(3, 4, 5), listOf(6, 7, 8),
+            listOf(0, 3, 6), listOf(1, 4, 7), listOf(2, 5, 8),
+            listOf(0, 4, 8), listOf(2, 4, 6)
         )
 
         for (pattern in winPatterns) {
@@ -68,11 +80,10 @@ fun TicTacToeGameScreen(
                 winner = result
                 gameOver = true
 
-                // Determinar ganador
                 val ganadorId = when (result) {
                     jugador1Symbol -> jugador1Id
                     jugador2Symbol -> jugador2Id
-                    else -> 0 // Empate
+                    else -> 0
                 }
                 onGameFinished(ganadorId)
             } else {
@@ -86,6 +97,24 @@ fun TicTacToeGameScreen(
         currentPlayer = "X"
         winner = null
         gameOver = false
+        partidaGuardada = false
+    }
+
+    LaunchedEffect(gameOver) {
+        if (gameOver && !partidaGuardada) {
+            val ganadorId = when (winner) {
+                jugador1Symbol -> jugador1Id
+                jugador2Symbol -> jugador2Id
+                "DRAW" -> 0
+                else -> null
+            }
+
+            viewModel.onEvent(PartidaEvent.GanadorChanged(ganadorId))
+            viewModel.onEvent(PartidaEvent.EsFinalizadaChanged(true))
+            viewModel.onEvent(PartidaEvent.SavePartida)
+
+            partidaGuardada = true
+        }
     }
 
     Scaffold(
@@ -121,7 +150,6 @@ fun TicTacToeGameScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Info de jugadores
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
@@ -156,7 +184,6 @@ fun TicTacToeGameScreen(
                 }
             }
 
-            // Turno actual
             if (!gameOver) {
                 Card(
                     colors = CardDefaults.cardColors(
@@ -174,7 +201,6 @@ fun TicTacToeGameScreen(
                 }
             }
 
-            // Tablero
             Column(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -195,7 +221,6 @@ fun TicTacToeGameScreen(
                 }
             }
 
-            // Resultado del juego
             if (gameOver) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -248,7 +273,6 @@ fun TicTacToeGameScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // Botones de acción
             if (gameOver) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -359,6 +383,7 @@ fun PlayerInfo(
             fontWeight = FontWeight.Bold,
             color = if (simbolo == "X") Color(0xFF6200EE) else Color(0xFF03DAC6)
         )
+
         Text(
             text = nombre,
             fontSize = 14.sp,
@@ -367,6 +392,7 @@ fun PlayerInfo(
             textAlign = TextAlign.Center,
             maxLines = 1
         )
+
         if (esTurno) {
             Text(
                 text = "• En juego •",
@@ -376,7 +402,6 @@ fun PlayerInfo(
         }
     }
 }
-
 
 @Preview(showSystemUi = true)
 @Composable

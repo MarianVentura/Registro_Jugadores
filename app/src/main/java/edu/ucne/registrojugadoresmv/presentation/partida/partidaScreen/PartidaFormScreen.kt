@@ -15,7 +15,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaViewModel.PartidaViewModel
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEvent
 
@@ -23,7 +23,7 @@ import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEve
 @Composable
 fun PartidaFormScreen(
     viewModel: PartidaViewModel = hiltViewModel(),
-    onNavigateToGame: (jugador1Id: Int, jugador2Id: Int) -> Unit,
+    onNavigateToGame: (jugador1Id: Int, jugador2Id: Int, jugador1Nombre: String, jugador2Nombre: String) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -88,7 +88,6 @@ fun PartidaFormScreen(
 
                     HorizontalDivider()
 
-                    // Dropdown Jugador 1
                     var expandedJugador1 by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(
                         expanded = expandedJugador1,
@@ -110,10 +109,12 @@ fun PartidaFormScreen(
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJugador1)
                             },
-                            modifier = Modifier.menuAnchor(
-                                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                enabled = true
-                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(
+                                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                    enabled = true
+                                ),
                             shape = RoundedCornerShape(12.dp),
                             isError = state.jugador1Error != null,
                             supportingText = {
@@ -158,7 +159,6 @@ fun PartidaFormScreen(
                         }
                     }
 
-                    // Dropdown Jugador 2
                     var expandedJugador2 by remember { mutableStateOf(false) }
                     ExposedDropdownMenuBox(
                         expanded = expandedJugador2,
@@ -180,10 +180,12 @@ fun PartidaFormScreen(
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedJugador2)
                             },
-                            modifier = Modifier.menuAnchor(
-                                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                                enabled = true
-                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .menuAnchor(
+                                    type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                    enabled = true
+                                ),
                             shape = RoundedCornerShape(12.dp),
                             isError = state.jugador2Error != null,
                             supportingText = {
@@ -230,14 +232,22 @@ fun PartidaFormScreen(
                 }
             }
 
-            // Botón Iniciar Partida
             Button(
                 onClick = {
                     if (state.jugador1Id != null && state.jugador2Id != null) {
                         if (state.jugador1Id == state.jugador2Id) {
-                            // Mostrar error
                         } else {
-                            onNavigateToGame(state.jugador1Id!!, state.jugador2Id!!)
+                            val jugador1 = state.jugadores.find { it.jugadorId == state.jugador1Id }
+                            val jugador2 = state.jugadores.find { it.jugadorId == state.jugador2Id }
+
+                            if (jugador1 != null && jugador2 != null) {
+                                onNavigateToGame(
+                                    state.jugador1Id!!,
+                                    state.jugador2Id!!,
+                                    jugador1.nombres,
+                                    jugador2.nombres
+                                )
+                            }
                         }
                     }
                 },
@@ -268,7 +278,32 @@ fun PartidaFormScreen(
                 }
             }
 
-            // Info Card
+            if (state.errorMessage != null) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Text(
+                            text = state.errorMessage ?: "",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF6200EE).copy(alpha = 0.1f)
@@ -296,14 +331,12 @@ fun PartidaFormScreen(
     }
 }
 
-// ==================== PREVIEW ====================
-
 @Preview(showSystemUi = true)
 @Composable
 fun PartidaFormScreenPreview() {
     MaterialTheme {
         PartidaFormScreen(
-            onNavigateToGame = { _, _ -> },
+            onNavigateToGame = { _, _, _, _ -> },
             onNavigateBack = {}
         )
     }
