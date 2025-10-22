@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador
+package edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent
 
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 sealed class JugadorEvent {

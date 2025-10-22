@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador
+package edu.ucne.registrojugadoresmv.presentation.jugador.jugadorUiState
 
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 
@@ -12,5 +12,7 @@ data class JugadorUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null,
-    val success: Boolean = false
+    val selectedJugador: Jugador? = null,
+    val showDeleteDialog: Boolean = false,
+    val isEditing: Boolean = false
 )

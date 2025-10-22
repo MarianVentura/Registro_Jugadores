@@ -4,12 +4,18 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+
 }
+
+
 
 
 android {
     namespace = "edu.ucne.registrojugadoresmv"
     compileSdk = 36
+
+
 
 
     defaultConfig {
@@ -20,8 +26,12 @@ android {
         versionName = "1.0"
 
 
+
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+
 
 
     buildTypes {
@@ -34,15 +44,16 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlin {
-        jvmToolchain(17) // Or your desired JVM version as an Int
+        jvmToolchain(11) // Or your desired JVM version as an Int
     }
     buildFeatures {
         compose = true
     }
+
 
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.3"
@@ -55,7 +66,11 @@ android {
 }
 
 
+
+
 dependencies {
+
+
 
 
     implementation(libs.androidx.core.ktx)
@@ -66,6 +81,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material:material-icons-extended")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -75,16 +91,25 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
 
+
+
+
     //navigation
-    implementation("androidx.navigation:navigation-compose:2.9.3")
+    implementation("androidx.navigation:navigation-compose:2.9.4")
     implementation(libs.kotlinx.serialization.json)
 
 
+    //hilt
+    implementation("com.google.dagger:hilt-android:2.57.1")
+    ksp("com.google.dagger:hilt-compiler:2.57.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
+
     //room
-    implementation("androidx.room:room-runtime:2.7.2")
-    annotationProcessor("androidx.room:room-compiler:2.7.2")
-    ksp("androidx.room:room-compiler:2.7.2")
+    implementation("androidx.room:room-runtime:2.8.0")
+    annotationProcessor("androidx.room:room-compiler:2.8.0")
+    ksp("androidx.room:room-compiler:2.8.0")
     //  optional - Kotlin Extensions and Coroutines support for Room
-    implementation("androidx.room:room-ktx:2.7.2")
+    implementation("androidx.room:room-ktx:2.8.0")
+
 
 }

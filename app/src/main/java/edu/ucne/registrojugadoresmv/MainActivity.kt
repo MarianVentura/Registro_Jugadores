@@ -4,9 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import edu.ucne.registrojugadoresmv.presentation.jugador.JugadorScreen
+import androidx.navigation.compose.rememberNavController
+import dagger.hilt.android.AndroidEntryPoint
+import edu.ucne.registrojugadoresmv.presentation.navigation.MainNavigation
 import edu.ucne.registrojugadoresmv.ui.theme.Registro_JugadoresTheme
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -14,7 +17,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Registro_JugadoresTheme {
-                JugadorScreen()
+                val navController = rememberNavController()
+                MainNavigation(navController = navController)
             }
         }
     }
