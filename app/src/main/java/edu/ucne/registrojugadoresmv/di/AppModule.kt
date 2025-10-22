@@ -30,5 +30,5 @@ object AppModule {
     fun providePartidaDao(jugadorDb: AppDatabase) = jugadorDb.partidaDao()
 
     @Provides
-    fun provideLogroDao(jugadorDb: AppDatabase) = jugadorDb.logroDao()  // ← NUEVO DAO AGREGADO
+    fun provideLogroDao(jugadorDb: AppDatabase) = jugadorDb.logroDao()
 }

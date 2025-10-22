@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -22,7 +23,7 @@ import androidx.compose.ui.unit.sp
 fun HomeScreen(
     onNavigateToJugadores: () -> Unit,
     onNavigateToPartidas: () -> Unit,
-    onNavigateToLogros: () -> Unit  // ← NUEVO PARÁMETRO AGREGADO
+    onNavigateToLogros: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -171,7 +172,7 @@ fun HomeScreen(
                         }
                     }
 
-                    // Botón Registro de Logros - ← NUEVO BOTÓN AGREGADO
+                    // Botón Registro de Logros
                     Button(
                         onClick = onNavigateToLogros,
                         modifier = Modifier
@@ -242,5 +243,17 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showSystemUi = true)
+@Composable
+fun HomeScreenPreview() {
+    MaterialTheme {
+        HomeScreen(
+            onNavigateToJugadores = {},
+            onNavigateToPartidas = {},
+            onNavigateToLogros = {}
+        )
     }
 }
