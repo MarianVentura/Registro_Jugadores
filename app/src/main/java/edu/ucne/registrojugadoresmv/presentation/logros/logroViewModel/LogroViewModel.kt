@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import edu.ucne.registrojugadoresmv.domain.model.Logro
 import edu.ucne.registrojugadoresmv.domain.usecase.logrosUseCases.*
-import edu.ucne.registrojugadoresmv.presentation.logro.logroEvent.LogroEvent
-import edu.ucne.registrojugadoresmv.presentation.logro.logroUiState.LogroUiState
+import edu.ucne.registrojugadoresmv.presentation.logros.logroEvent.LogroEvent
+import edu.ucne.registrojugadoresmv.presentation.logros.logroUiState.LogroUiState
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject

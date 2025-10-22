@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.domain.usecase.movimientos
+package edu.ucne.registrojugadoresmv.domain.usecase.movimientosUseCase
 
 import edu.ucne.registrojugadoresmv.data.remote.Resource
 import edu.ucne.registrojugadoresmv.domain.model.Movimiento

@@ -11,17 +11,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaViewModel.PartidaViewModel
 import edu.ucne.registrojugadoresmv.presentation.partida.partidaEvent.PartidaEvent
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,12 +30,10 @@ fun TicTacToeGameScreen(
     jugador2Nombre: String = "Jugador 2",
     onGameFinished: (ganadorId: Int?) -> Unit,
     onNavigateBack: () -> Unit,
-    viewModel: PartidaViewModel = hiltViewModel()
+    viewModel: PartidaViewModel = hiltViewModel(),
+    ticTacToeViewModel: TicTacToeViewModel = hiltViewModel()
 ) {
-    var board by remember { mutableStateOf(List(9) { "" }) }
-    var currentPlayer by remember { mutableStateOf("X") }
-    var winner by remember { mutableStateOf<String?>(null) }
-    var gameOver by remember { mutableStateOf(false) }
+    val state by ticTacToeViewModel.uiState.collectAsState()
     var partidaGuardada by remember { mutableStateOf(false) }
 
     val jugador1Symbol = "X"
@@ -48,61 +44,9 @@ fun TicTacToeGameScreen(
         viewModel.onEvent(PartidaEvent.Jugador2Changed(jugador2Id))
     }
 
-    fun checkWinner(): String? {
-        val winPatterns = listOf(
-            listOf(0, 1, 2), listOf(3, 4, 5), listOf(6, 7, 8),
-            listOf(0, 3, 6), listOf(1, 4, 7), listOf(2, 5, 8),
-            listOf(0, 4, 8), listOf(2, 4, 6)
-        )
-
-        for (pattern in winPatterns) {
-            val (a, b, c) = pattern
-            if (board[a].isNotEmpty() && board[a] == board[b] && board[b] == board[c]) {
-                return board[a]
-            }
-        }
-
-        if (board.all { it.isNotEmpty() }) {
-            return "DRAW"
-        }
-
-        return null
-    }
-
-    fun makeMove(index: Int) {
-        if (board[index].isEmpty() && !gameOver) {
-            board = board.toMutableList().apply {
-                this[index] = currentPlayer
-            }
-
-            val result = checkWinner()
-            if (result != null) {
-                winner = result
-                gameOver = true
-
-                val ganadorId = when (result) {
-                    jugador1Symbol -> jugador1Id
-                    jugador2Symbol -> jugador2Id
-                    else -> 0
-                }
-                onGameFinished(ganadorId)
-            } else {
-                currentPlayer = if (currentPlayer == "X") "O" else "X"
-            }
-        }
-    }
-
-    fun resetGame() {
-        board = List(9) { "" }
-        currentPlayer = "X"
-        winner = null
-        gameOver = false
-        partidaGuardada = false
-    }
-
-    LaunchedEffect(gameOver) {
-        if (gameOver && !partidaGuardada) {
-            val ganadorId = when (winner) {
+    LaunchedEffect(state.gameOver) {
+        if (state.gameOver && !partidaGuardada) {
+            val ganadorId = when (state.winner) {
                 jugador1Symbol -> jugador1Id
                 jugador2Symbol -> jugador2Id
                 "DRAW" -> 0
@@ -146,64 +90,223 @@ fun TicTacToeGameScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            Spacer(modifier = Modifier.height(8.dp))
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFFF5F5F5)
                 ),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    PlayerInfo(
-                        nombre = jugador1Nombre,
-                        simbolo = jugador1Symbol,
-                        esTurno = currentPlayer == jugador1Symbol && !gameOver
-                    )
-
                     Text(
-                        text = "VS",
-                        fontSize = 24.sp,
+                        text = "ID de Partida",
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF6200EE)
                     )
 
-                    PlayerInfo(
-                        nombre = jugador2Nombre,
-                        simbolo = jugador2Symbol,
-                        esTurno = currentPlayer == jugador2Symbol && !gameOver
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        OutlinedTextField(
+                            value = state.partidaIdText,
+                            onValueChange = {
+                                ticTacToeViewModel.onEvent(TicTacToeEvent.PartidaIdChanged(it))
+                            },
+                            modifier = Modifier.weight(1f),
+                            label = { Text("Ej: 1") },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        IconButton(
+                            onClick = {
+                                ticTacToeViewModel.onEvent(TicTacToeEvent.LoadMovimientos)
+                            },
+                            modifier = Modifier
+                                .background(
+                                    color = Color(0xFF6200EE),
+                                    shape = RoundedCornerShape(12.dp)
+                                )
+                                .size(56.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = "Recargar",
+                                tint = Color.White
+                            )
+                        }
+                    }
+
+                    if (state.currentPartidaId != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF4CAF50),
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Text(
+                                text = "Partida activa: #${state.currentPartidaId}",
+                                fontSize = 14.sp,
+                                color = Color(0xFF4CAF50),
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (state.isLoading) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color(0xFF2196F3).copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = Color(0xFF2196F3)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Cargando movimientos...",
+                        color = Color(0xFF1976D2),
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
 
-            if (!gameOver) {
-                Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF6200EE).copy(alpha = 0.1f)
-                    ),
-                    shape = RoundedCornerShape(12.dp)
+            if (state.successMessage != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color(0xFF4CAF50).copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFF4CAF50),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = state.successMessage!!,
+                        color = Color(0xFF2E7D32),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            if (state.errorMessage != null) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color(0xFFF44336).copy(alpha = 0.1f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = Color(0xFFF44336),
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = state.errorMessage!!,
+                        color = Color(0xFFC62828),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PlayerInfoSimple(
+                    nombre = jugador1Nombre,
+                    simbolo = jugador1Symbol,
+                    esTurno = state.currentPlayer == jugador1Symbol && !state.gameOver
+                )
+
+                Text(
+                    text = "VS",
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Black,
+                    color = Color(0xFF6200EE)
+                )
+
+                PlayerInfoSimple(
+                    nombre = jugador2Nombre,
+                    simbolo = jugador2Symbol,
+                    esTurno = state.currentPlayer == jugador2Symbol && !state.gameOver
+                )
+            }
+
+            if (!state.gameOver && state.currentPartidaId != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(
+                                    Color(0xFF6200EE).copy(alpha = 0.1f),
+                                    Color(0xFF03DAC6).copy(alpha = 0.1f)
+                                )
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(12.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Turno de: ${if (currentPlayer == jugador1Symbol) jugador1Nombre else jugador2Nombre} ($currentPlayer)",
-                        modifier = Modifier.padding(16.dp),
+                        text = "Turno de ${if (state.currentPlayer == jugador1Symbol) jugador1Nombre else jugador2Nombre}",
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         color = Color(0xFF6200EE)
                     )
                 }
             }
 
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 for (row in 0..2) {
                     Row(
@@ -212,60 +315,58 @@ fun TicTacToeGameScreen(
                         for (col in 0..2) {
                             val index = row * 3 + col
                             GameCell(
-                                value = board[index],
-                                onClick = { makeMove(index) },
-                                enabled = !gameOver
+                                value = state.board[index],
+                                onClick = {
+                                    ticTacToeViewModel.onEvent(TicTacToeEvent.MakeMove(index))
+                                },
+                                enabled = !state.gameOver && state.currentPartidaId != null
                             )
                         }
                     }
                 }
             }
 
-            if (gameOver) {
+            if (state.gameOver) {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = when (winner) {
-                            "DRAW" -> Color(0xFFFF9800).copy(alpha = 0.2f)
-                            else -> Color(0xFF4CAF50).copy(alpha = 0.2f)
+                        containerColor = when (state.winner) {
+                            "DRAW" -> Color(0xFFFF9800)
+                            else -> Color(0xFF4CAF50)
                         }
                     ),
-                    shape = RoundedCornerShape(16.dp)
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    Column(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .padding(20.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = when (winner) {
+                            imageVector = when (state.winner) {
                                 "DRAW" -> Icons.Default.Handshake
                                 else -> Icons.Default.EmojiEvents
                             },
                             contentDescription = null,
-                            modifier = Modifier.size(48.dp),
-                            tint = when (winner) {
-                                "DRAW" -> Color(0xFFFF9800)
-                                else -> Color(0xFF4CAF50)
-                            }
+                            modifier = Modifier.size(32.dp),
+                            tint = Color.White
                         )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
 
                         Text(
-                            text = when (winner) {
+                            text = when (state.winner) {
                                 "DRAW" -> "¡Empate!"
-                                jugador1Symbol -> "¡${jugador1Nombre} Ganó!"
-                                jugador2Symbol -> "¡${jugador2Nombre} Ganó!"
+                                jugador1Symbol -> "¡Ganó ${jugador1Nombre}!"
+                                jugador2Symbol -> "¡Ganó ${jugador2Nombre}!"
                                 else -> ""
                             },
                             fontSize = 24.sp,
                             fontWeight = FontWeight.Bold,
-                            color = when (winner) {
-                                "DRAW" -> Color(0xFFFF9800)
-                                else -> Color(0xFF4CAF50)
-                            }
+                            color = Color.White
                         )
                     }
                 }
@@ -273,24 +374,32 @@ fun TicTacToeGameScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            if (gameOver) {
+            if (state.gameOver) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
-                        onClick = { resetGame() },
+                        onClick = {
+                            partidaGuardada = false
+                            ticTacToeViewModel.onEvent(TicTacToeEvent.ResetGame)
+                        },
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
+                        border = ButtonDefaults.outlinedButtonBorder.copy(
+                            width = 2.dp
+                        )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Jugar de Nuevo")
+                        Text("Reiniciar", fontWeight = FontWeight.Bold)
                     }
 
                     Button(
@@ -308,26 +417,30 @@ fun TicTacToeGameScreen(
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Finalizar")
+                        Text("Finalizar", fontWeight = FontWeight.Bold)
                     }
                 }
             } else {
                 Button(
-                    onClick = { resetGame() },
+                    onClick = {
+                        ticTacToeViewModel.onEvent(TicTacToeEvent.ResetGame)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .padding(bottom = 16.dp),
                     shape = RoundedCornerShape(16.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFFFF9800)
-                    )
+                    ),
+                    enabled = state.currentPartidaId != null
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Reiniciar Juego")
+                    Text("Reiniciar Juego", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -348,8 +461,8 @@ fun GameCell(
                 shape = RoundedCornerShape(12.dp)
             )
             .border(
-                width = 2.dp,
-                color = Color(0xFF6200EE).copy(alpha = 0.5f),
+                width = 3.dp,
+                color = Color(0xFF6200EE).copy(alpha = 0.3f),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable(enabled = enabled && value.isEmpty()) { onClick() },
@@ -357,8 +470,8 @@ fun GameCell(
     ) {
         Text(
             text = value,
-            fontSize = 48.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 52.sp,
+            fontWeight = FontWeight.Black,
             color = when (value) {
                 "X" -> Color(0xFF6200EE)
                 "O" -> Color(0xFF03DAC6)
@@ -369,24 +482,25 @@ fun GameCell(
 }
 
 @Composable
-fun PlayerInfo(
+fun PlayerInfoSimple(
     nombre: String,
     simbolo: String,
     esTurno: Boolean
 ) {
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = simbolo,
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
+            fontSize = 48.sp,
+            fontWeight = FontWeight.Black,
             color = if (simbolo == "X") Color(0xFF6200EE) else Color(0xFF03DAC6)
         )
 
         Text(
             text = nombre,
-            fontSize = 14.sp,
+            fontSize = 16.sp,
             fontWeight = if (esTurno) FontWeight.Bold else FontWeight.Normal,
             color = if (esTurno) Color(0xFF6200EE) else Color.Gray,
             textAlign = TextAlign.Center,
@@ -394,26 +508,14 @@ fun PlayerInfo(
         )
 
         if (esTurno) {
-            Text(
-                text = "• En juego •",
-                fontSize = 12.sp,
-                color = Color(0xFF6200EE)
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(
+                        color = Color(0xFF6200EE),
+                        shape = RoundedCornerShape(4.dp)
+                    )
             )
         }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-fun TicTacToeGameScreenPreview() {
-    MaterialTheme {
-        TicTacToeGameScreen(
-            jugador1Id = 1,
-            jugador2Id = 2,
-            jugador1Nombre = "Sabaku no Gaara",
-            jugador2Nombre = "Uzumaki Naruto",
-            onGameFinished = {},
-            onNavigateBack = {}
-        )
     }
 }
