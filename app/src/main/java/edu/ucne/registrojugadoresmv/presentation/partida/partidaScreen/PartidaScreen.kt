@@ -116,7 +116,6 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Icono grande
                 Box(
                     modifier = Modifier
                         .size(120.dp)
@@ -140,7 +139,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                     )
                 }
 
-                // Título
+
                 Text(
                     text = "Partidas",
                     style = MaterialTheme.typography.headlineLarge.copy(
@@ -159,7 +158,6 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Descripción
                 Text(
                     text = "Registra y administra todas las partidas del torneo. Lleva un control completo de los enfrentamientos y resultados.",
                     style = MaterialTheme.typography.bodyLarge,
@@ -170,7 +168,6 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Botón de inicio
                 Button(
                     onClick = onStartRegistration,
                     modifier = Modifier
