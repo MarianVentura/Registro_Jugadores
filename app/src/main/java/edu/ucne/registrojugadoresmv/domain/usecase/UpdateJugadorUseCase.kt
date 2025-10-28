@@ -9,7 +9,6 @@ class UpdateJugadorUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(jugador: Jugador): Result<Unit> {
         return try {
-            // Validaciones
             if (jugador.nombres.isBlank()) {
                 return Result.failure(Exception("El nombre es obligatorio"))
             }
