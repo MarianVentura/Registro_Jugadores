@@ -21,9 +21,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.ucne.registrojugadoresmv.domain.model.Logro
-import edu.ucne.registrojugadoresmv.presentation.logro.logroUiState.LogroUiState
+import edu.ucne.registrojugadoresmv.presentation.logros.logroUiState.LogroUiState
 import edu.ucne.registrojugadoresmv.presentation.logros.logroViewModel.LogroViewModel
-import edu.ucne.registrojugadoresmv.presentation.logro.logroEvent.LogroEvent
+import edu.ucne.registrojugadoresmv.presentation.logros.logroEvent.LogroEvent
 import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -130,7 +130,7 @@ fun WelcomeScreen(onStartRegistration: () -> Unit) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Registra y administra todos los logros del juego Tic-Tac-Toe. Crea metas y objetivos que los jugadores pueden alcanzar durante sus partidas.",
+                    text = "Registra y administra todos los logros del juego Tic-Tac-Toe.",
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color(0xFF444444),
                     textAlign = TextAlign.Center,
@@ -269,7 +269,6 @@ fun LogroForm(
                 color = Color(0xFF6200EE)
             )
 
-            // Campo Nombre
             OutlinedTextField(
                 value = state.nombre,
                 onValueChange = { viewModel.onEvent(LogroEvent.NombreChanged(it)) },
@@ -294,7 +293,6 @@ fun LogroForm(
                 }
             )
 
-            // Campo Descripción
             OutlinedTextField(
                 value = state.descripcion,
                 onValueChange = { viewModel.onEvent(LogroEvent.DescripcionChanged(it)) },
@@ -321,7 +319,6 @@ fun LogroForm(
                 }
             )
 
-            // Botones
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -377,7 +374,6 @@ fun LogroForm(
                 }
             }
 
-            // Mensajes
             AnimatedVisibility(
                 visible = state.successMessage != null,
                 enter = slideInVertically() + fadeIn(),
@@ -468,7 +464,6 @@ fun LogroItem(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Icono de logro
                 Box(
                     modifier = Modifier
                         .size(56.dp)
@@ -491,7 +486,6 @@ fun LogroItem(
                     )
                 }
 
-                // Información del logro
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -511,7 +505,6 @@ fun LogroItem(
                     )
                 }
 
-                // Botones de acción
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -549,7 +542,6 @@ fun LogroItem(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Descripción
             Text(
                 text = logro.descripcion,
                 style = MaterialTheme.typography.bodyMedium,

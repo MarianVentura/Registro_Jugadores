@@ -268,7 +268,6 @@ fun RegistrationForm(
                 color = Color(0xFF6200EE)
             )
 
-            // Name field
             OutlinedTextField(
                 value = state.nombres,
                 onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.NombresChanged(it)
@@ -294,7 +293,6 @@ fun RegistrationForm(
                 }
             )
 
-            // Games field
             OutlinedTextField(
                 value = state.partidas,
                 onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.PartidasChanged(it)
@@ -320,7 +318,6 @@ fun RegistrationForm(
                 }
             )
 
-            // Bottoms
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -377,7 +374,6 @@ fun RegistrationForm(
                 }
             }
 
-            // Messages
             AnimatedVisibility(
                 visible = state.successMessage != null,
                 enter = slideInVertically() + fadeIn(),
@@ -465,7 +461,6 @@ fun ImprovedJugadorItem(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar circular
             Box(
                 modifier = Modifier
                     .size(56.dp)
@@ -488,7 +483,6 @@ fun ImprovedJugadorItem(
                 )
             }
 
-            // Player Information
             Column(
                 modifier = Modifier
                     .weight(1f)
