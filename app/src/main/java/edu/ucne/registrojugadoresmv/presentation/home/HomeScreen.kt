@@ -55,6 +55,7 @@ fun HomeScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
+                // Título principal
                 Text(
                     text = "Tic-Tac-Toe",
                     style = MaterialTheme.typography.headlineLarge.copy(
@@ -73,6 +74,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Descripción
                 Text(
                     text = "Administra jugadores, partidas y logros de tu torneo de Tic-Tac-Toe de manera profesional.",
                     style = MaterialTheme.typography.bodyLarge,
@@ -83,10 +85,12 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
+                // Botones de navegación
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
+                    // Botón Registro de Jugadores
                     Button(
                         onClick = onNavigateToJugadores,
                         modifier = Modifier
@@ -126,6 +130,7 @@ fun HomeScreen(
                         }
                     }
 
+                    // Botón Registro de Partidas
                     Button(
                         onClick = onNavigateToPartidas,
                         modifier = Modifier
@@ -167,6 +172,7 @@ fun HomeScreen(
                         }
                     }
 
+                    // Botón Registro de Logros
                     Button(
                         onClick = onNavigateToLogros,
                         modifier = Modifier
@@ -211,6 +217,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Información adicional
                 Card(
                     colors = CardDefaults.cardColors(
                         containerColor = Color(0xFF6200EE).copy(alpha = 0.1f)
