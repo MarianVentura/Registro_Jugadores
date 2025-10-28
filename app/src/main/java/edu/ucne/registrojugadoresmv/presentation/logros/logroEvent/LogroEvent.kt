@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.logros.logroEvent
+package edu.ucne.registrojugadoresmv.presentation.logro.logroEvent
 
 import edu.ucne.registrojugadoresmv.domain.model.Logro
 
