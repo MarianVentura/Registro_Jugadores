@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.logros.logroUiState
+package edu.ucne.registrojugadoresmv.presentation.logro.logroUiState
 
 import edu.ucne.registrojugadoresmv.domain.model.Logro
 
