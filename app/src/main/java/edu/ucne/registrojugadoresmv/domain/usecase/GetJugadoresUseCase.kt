@@ -9,6 +9,6 @@ class GetJugadoresUseCase @Inject constructor(
     private val repository: JugadorRepository
 ) {
     operator fun invoke(): Flow<List<Jugador>> {
-        return repository.getAllJugadores()
+        return repository.observeJugadores()
     }
 }
