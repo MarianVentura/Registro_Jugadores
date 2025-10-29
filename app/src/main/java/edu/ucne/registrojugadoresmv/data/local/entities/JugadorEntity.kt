@@ -11,6 +11,5 @@ data class JugadorEntity(
     val remoteId: Int? = null,
     val nombres: String,
     val email: String,
-    val partidas: Int = 0,
     val isPendingCreate: Boolean = false
 )
