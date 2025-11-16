@@ -1,26 +1,25 @@
 package edu.ucne.registrojugadoresmv.domain.usecase
 
+import edu.ucne.registrojugadoresmv.data.remote.Resource
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
 import edu.ucne.registrojugadoresmv.domain.repository.JugadorRepository
 import javax.inject.Inject
 
 class UpdateJugadorUseCase @Inject constructor(
-    private val repository: JugadorRepository
+    private val repository: JugadorRepository,
+    private val validateJugadorUseCase: ValidateJugadorUseCase
 ) {
-    suspend operator fun invoke(jugador: Jugador): Result<Unit> {
-        return try {
-            if (jugador.nombres.isBlank()) {
-                return Result.failure(Exception("El nombre es obligatorio"))
-            }
-
-            if (jugador.partidas < 0) {
-                return Result.failure(Exception("Las partidas no pueden ser negativas"))
-            }
-
-            repository.updateJugador(jugador.copy(nombres = jugador.nombres.trim()))
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
+    suspend operator fun invoke(jugador: Jugador): Resource<Unit> {
+        val nombresError = validateJugadorUseCase.validateNombre(jugador.nombres, jugador.id)
+        if (nombresError != null) {
+            return Resource.Error(nombresError)
         }
+
+        val emailError = validateJugadorUseCase.validateEmail(jugador.email)
+        if (emailError != null) {
+            return Resource.Error(emailError)
+        }
+
+        return repository.upsert(jugador.copy(nombres = jugador.nombres.trim()))
     }
 }

@@ -7,7 +7,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import edu.ucne.registrojugadoresmv.data.remote.MovimientoApi
+import edu.ucne.registrojugadoresmv.data.remote.TicTacToeApi
 import edu.ucne.registrojugadoresmv.data.remote.repository.MovimientoRepositoryImpl
 import edu.ucne.registrojugadoresmv.domain.repository.MovimientoRepository
 import okhttp3.OkHttpClient
@@ -41,13 +41,13 @@ object ApiModule {
 
     @Provides
     @Singleton
-    fun provideMovimientoApi(moshi: Moshi, okHttpClient: OkHttpClient): MovimientoApi =
+    fun provideTicTacToeApi(moshi: Moshi, okHttpClient: OkHttpClient): TicTacToeApi =
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(okHttpClient)
             .build()
-            .create(MovimientoApi::class.java)
+            .create(TicTacToeApi::class.java)
 }
 
 @InstallIn(SingletonComponent::class)

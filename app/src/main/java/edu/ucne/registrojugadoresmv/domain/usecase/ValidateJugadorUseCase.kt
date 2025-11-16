@@ -6,19 +6,18 @@ import javax.inject.Inject
 class ValidateJugadorUseCase @Inject constructor(
     private val repository: JugadorRepository
 ) {
-    suspend fun validateNombre(nombre: String): String? {
+    suspend fun validateNombre(nombre: String, excludeId: String? = null): String? {
         return when {
             nombre.isBlank() -> "El nombre es obligatorio"
-            repository.existeNombre(nombre.trim()) -> "Ya existe un jugador con ese nombre"
+            repository.existeNombre(nombre.trim(), excludeId?.toIntOrNull()) -> "Ya existe un jugador con ese nombre"
             else -> null
         }
     }
 
-    fun validatePartidas(partidas: String): String? {
+    fun validateEmail(email: String): String? {
         return when {
-            partidas.isBlank() -> "Las partidas son obligatorias"
-            partidas.toIntOrNull() == null -> "Las partidas deben ser un número válido"
-            partidas.toInt() < 0 -> "Las partidas no pueden ser negativas"
+            email.isBlank() -> "El email es obligatorio"
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Email inválido"
             else -> null
         }
     }

@@ -1,4 +1,4 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador.jugadorScreen
+package edu.ucne.registrojugadoresmv.presentation.jugador
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
@@ -22,8 +22,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
-import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorUiState.JugadorUiState
-import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorViewModel.JugadorViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -195,6 +193,15 @@ fun MainRegistrationScreen(
                         )
                     }
                 },
+                actions = {
+                    IconButton(onClick = { viewModel.onEvent(JugadorEvent.SyncJugadores) }) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Sincronizar",
+                            tint = Color.White
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color(0xFF6200EE),
                     titleContentColor = Color.White,
@@ -234,8 +241,8 @@ fun MainRegistrationScreen(
                 items(state.jugadores) { jugador ->
                     ImprovedJugadorItem(
                         jugador = jugador,
-                        onEdit = { /* TODO */ },
-                        onDelete = { /* TODO */ }
+                        onEdit = { viewModel.onEvent(JugadorEvent.EditJugador(jugador)) },
+                        onDelete = { viewModel.onEvent(JugadorEvent.DeleteJugador(jugador.id)) }
                     )
                 }
             }
@@ -261,7 +268,7 @@ fun RegistrationForm(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = "Nuevo Jugador",
+                text = if (state.isEditing) "Editar Jugador" else "Nuevo Jugador",
                 style = MaterialTheme.typography.headlineSmall.copy(
                     fontWeight = FontWeight.Bold
                 ),
@@ -270,8 +277,7 @@ fun RegistrationForm(
 
             OutlinedTextField(
                 value = state.nombres,
-                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.NombresChanged(it)
-                ) },
+                onValueChange = { viewModel.onEvent(JugadorEvent.NombresChanged(it)) },
                 label = { Text("Nombre completo") },
                 leadingIcon = {
                     Icon(
@@ -294,9 +300,32 @@ fun RegistrationForm(
             )
 
             OutlinedTextField(
+                value = state.email,
+                onValueChange = { viewModel.onEvent(JugadorEvent.EmailChanged(it)) },
+                label = { Text("Correo electrónico") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        tint = Color(0xFF6200EE)
+                    )
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                isError = state.emailError != null,
+                supportingText = {
+                    state.emailError?.let {
+                        Text(
+                            text = it,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            )
+
+            OutlinedTextField(
                 value = state.partidas,
-                onValueChange = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.PartidasChanged(it)
-                ) },
+                onValueChange = { viewModel.onEvent(JugadorEvent.PartidasChanged(it)) },
                 label = { Text("Número de partidas") },
                 leadingIcon = {
                     Icon(
@@ -323,8 +352,7 @@ fun RegistrationForm(
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Button(
-                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.SaveJugador)
-                    },
+                    onClick = { viewModel.onEvent(JugadorEvent.SaveJugador) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -349,13 +377,13 @@ fun RegistrationForm(
                                 imageVector = Icons.Default.Check,
                                 contentDescription = null
                             )
-                            Text("Guardar")
+                            Text(if (state.isEditing) "Actualizar" else "Guardar")
                         }
                     }
                 }
 
                 OutlinedButton(
-                    onClick = { viewModel.onEvent(edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent.ClearForm) },
+                    onClick = { viewModel.onEvent(JugadorEvent.ClearForm) },
                     modifier = Modifier
                         .weight(1f)
                         .height(48.dp),
@@ -496,10 +524,23 @@ fun ImprovedJugadorItem(
                     color = Color(0xFF2C2C2C)
                 )
                 Text(
-                    text = "ID: ${jugador.jugadorId} • Partidas: ${jugador.partidas}",
+                    text = jugador.email,
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color(0xFF666666)
                 )
+                if (jugador.isPendingCreate) {
+                    Text(
+                        text = "⏳ Pendiente de sincronizar",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFFF9800)
+                    )
+                } else if (jugador.remoteId != null) {
+                    Text(
+                        text = "✅ Sincronizado (ID: ${jugador.remoteId})",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF4CAF50)
+                    )
+                }
             }
 
             Row(
@@ -606,9 +647,12 @@ fun ImprovedJugadorItemPreview() {
     MaterialTheme {
         ImprovedJugadorItem(
             jugador = Jugador(
-                jugadorId = 1,
+                id = "abc123",
+                remoteId = 1,
                 nombres = "Juan Pérez",
-                partidas = 15
+                email = "juan@example.com",
+                partidas = 15,
+                isPendingCreate = false
             ),
             onEdit = {},
             onDelete = {}

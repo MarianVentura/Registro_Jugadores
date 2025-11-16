@@ -1,14 +1,11 @@
-package edu.ucne.registrojugadoresmv.presentation.jugador.jugadorViewModel
+package edu.ucne.registrojugadoresmv.presentation.jugador
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import edu.ucne.registrojugadoresmv.data.remote.Resource
 import edu.ucne.registrojugadoresmv.domain.model.Jugador
-import edu.ucne.registrojugadoresmv.domain.usecase.GetJugadoresUseCase
-import edu.ucne.registrojugadoresmv.domain.usecase.InsertJugadorUseCase
-import edu.ucne.registrojugadoresmv.domain.usecase.ValidateJugadorUseCase
-import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorEvent.JugadorEvent
-import edu.ucne.registrojugadoresmv.presentation.jugador.jugadorUiState.JugadorUiState
+import edu.ucne.registrojugadoresmv.domain.usecase.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +20,10 @@ import javax.inject.Inject
 class JugadorViewModel @Inject constructor(
     private val getJugadoresUseCase: GetJugadoresUseCase,
     private val insertJugadorUseCase: InsertJugadorUseCase,
-    private val validateJugadorUseCase: ValidateJugadorUseCase
+    private val updateJugadorUseCase: UpdateJugadorUseCase,
+    private val deleteJugadorUseCase: DeleteJugadorUseCase,
+    private val validateJugadorUseCase: ValidateJugadorUseCase,
+    private val triggerSyncUseCase: TriggerSyncUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(JugadorUiState())
@@ -40,6 +40,17 @@ class JugadorViewModel @Inject constructor(
                     currentState.copy(
                         nombres = event.nombres,
                         nombresError = null,
+                        errorMessage = null,
+                        successMessage = null
+                    )
+                }
+            }
+
+            is JugadorEvent.EmailChanged -> {
+                updateUiState { currentState ->
+                    currentState.copy(
+                        email = event.email,
+                        emailError = null,
                         errorMessage = null,
                         successMessage = null
                     )
@@ -82,6 +93,10 @@ class JugadorViewModel @Inject constructor(
             is JugadorEvent.ConfirmDeleteJugador -> {
                 confirmDeleteJugador(event.jugador)
             }
+
+            is JugadorEvent.SyncJugadores -> {
+                syncJugadores()
+            }
         }
     }
 
@@ -93,14 +108,17 @@ class JugadorViewModel @Inject constructor(
         viewModelScope.launch {
             val currentState = _uiState.value
 
-            val nombresError = validateJugadorUseCase.validateNombre(currentState.nombres)
-            val partidasError = validatePartidasImproved(currentState.partidas)
+            val nombresError = validateJugadorUseCase.validateNombre(
+                currentState.nombres,
+                if (currentState.isEditing) currentState.selectedJugador?.id else null
+            )
+            val emailError = validateJugadorUseCase.validateEmail(currentState.email)
 
-            if (nombresError != null || partidasError != null) {
+            if (nombresError != null || emailError != null) {
                 updateUiState { state ->
                     state.copy(
                         nombresError = nombresError,
-                        partidasError = partidasError,
+                        emailError = emailError,
                         isLoading = false
                     )
                 }
@@ -109,39 +127,54 @@ class JugadorViewModel @Inject constructor(
 
             updateUiState { state -> state.copy(isLoading = true) }
 
-            val jugador = Jugador(
-                jugadorId = currentState.jugadorId,
-                nombres = currentState.nombres.trim(),
-                partidas = currentState.partidas.toInt()
-            )
+            val jugador = if (currentState.isEditing && currentState.selectedJugador != null) {
+                currentState.selectedJugador.copy(
+                    nombres = currentState.nombres.trim(),
+                    email = currentState.email.trim(),
+                    partidas = currentState.partidas.toIntOrNull() ?: 0
+                )
+            } else {
+                Jugador(
+                    nombres = currentState.nombres.trim(),
+                    email = currentState.email.trim(),
+                    partidas = currentState.partidas.toIntOrNull() ?: 0,
+                    isPendingCreate = true
+                )
+            }
 
-            insertJugadorUseCase(jugador)
-                .onSuccess {
+            val result = if (currentState.isEditing) {
+                updateJugadorUseCase(jugador)
+            } else {
+                insertJugadorUseCase(jugador)
+            }
+
+            when (result) {
+                is Resource.Success -> {
                     updateUiState { state ->
                         JugadorUiState(
                             jugadores = state.jugadores,
-                            successMessage = "Jugador guardado exitosamente"
+                            successMessage = if (currentState.isEditing)
+                                "Jugador actualizado. Se sincronizará con el servidor."
+                            else
+                                "Jugador guardado. Se sincronizará con el servidor."
                         )
                     }
+
+                    triggerSyncUseCase()
+
+                    kotlinx.coroutines.delay(3000)
+                    updateUiState { state -> state.copy(successMessage = null) }
                 }
-                .onFailure { exception ->
+                is Resource.Error -> {
                     updateUiState { state ->
                         state.copy(
                             isLoading = false,
-                            errorMessage = exception.message ?: "Error desconocido"
+                            errorMessage = result.message ?: "Error desconocido"
                         )
                     }
                 }
-        }
-    }
-
-    private fun validatePartidasImproved(partidas: String): String? {
-        return when {
-            partidas.isBlank() -> "Las partidas son obligatorias"
-            partidas.toIntOrNull() == null -> "Las partidas deben ser un número válido"
-            partidas.toInt() < 0 -> "Las partidas no pueden ser negativas"
-            partidas.toInt() > 10000 -> "El número de partidas es demasiado alto (máximo 10,000)"
-            else -> null
+                is Resource.Loading -> {}
+            }
         }
     }
 
@@ -167,19 +200,34 @@ class JugadorViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    private fun deleteJugador(jugadorId: Int) {
+    private fun deleteJugador(jugadorId: String) {
         viewModelScope.launch {
             try {
                 updateUiState { state -> state.copy(isLoading = true) }
 
-                val jugador = _uiState.value.jugadores.find { it.jugadorId == jugadorId }
+                val jugador = _uiState.value.jugadores.find { it.id == jugadorId }
                 if (jugador != null) {
-                    updateUiState { state ->
-                        state.copy(
-                            jugadores = state.jugadores.filter { it.jugadorId != jugadorId },
-                            isLoading = false,
-                            successMessage = "Jugador eliminado exitosamente"
-                        )
+                    when (val result = deleteJugadorUseCase(jugador)) {
+                        is Resource.Success -> {
+                            updateUiState { state ->
+                                state.copy(
+                                    isLoading = false,
+                                    successMessage = "Jugador eliminado exitosamente"
+                                )
+                            }
+
+                            kotlinx.coroutines.delay(3000)
+                            updateUiState { state -> state.copy(successMessage = null) }
+                        }
+                        is Resource.Error -> {
+                            updateUiState { state ->
+                                state.copy(
+                                    isLoading = false,
+                                    errorMessage = result.message ?: "Error al eliminar"
+                                )
+                            }
+                        }
+                        is Resource.Loading -> {}
                     }
                 } else {
                     updateUiState { state ->
@@ -200,30 +248,23 @@ class JugadorViewModel @Inject constructor(
         }
     }
 
-    private fun selectJugador(jugadorId: Int) {
-        val jugador = _uiState.value.jugadores.find { it.jugadorId == jugadorId }
+    private fun selectJugador(jugadorId: String) {
+        val jugador = _uiState.value.jugadores.find { it.id == jugadorId }
         if (jugador != null) {
-            updateUiState { state ->
-                state.copy(
-                    jugadorId = jugador.jugadorId,
-                    nombres = jugador.nombres,
-                    partidas = jugador.partidas.toString(),
-                    nombresError = null,
-                    partidasError = null,
-                    errorMessage = null,
-                    successMessage = null
-                )
-            }
+            editJugador(jugador)
         }
     }
 
     private fun editJugador(jugador: Jugador) {
         updateUiState { state ->
             state.copy(
-                jugadorId = jugador.jugadorId,
+                selectedJugador = jugador,
                 nombres = jugador.nombres,
+                email = jugador.email,
                 partidas = jugador.partidas.toString(),
+                isEditing = true,
                 nombresError = null,
+                emailError = null,
                 partidasError = null,
                 errorMessage = null,
                 successMessage = null
@@ -232,6 +273,18 @@ class JugadorViewModel @Inject constructor(
     }
 
     private fun confirmDeleteJugador(jugador: Jugador) {
-        deleteJugador(jugador.jugadorId)
+        deleteJugador(jugador.id)
+    }
+
+    private fun syncJugadores() {
+        triggerSyncUseCase()
+        updateUiState { state ->
+            state.copy(successMessage = "Sincronización iniciada")
+        }
+
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(3000)
+            updateUiState { state -> state.copy(successMessage = null) }
+        }
     }
 }
